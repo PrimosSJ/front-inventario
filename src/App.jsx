@@ -2,6 +2,9 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import './App.css'
 
+import { AuthProvider } from './components/auth/authContext'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+
 import Inventario from './components/Inventario'
 import Prestamos from './components/Prestamos'
 import ItemView from './components/inventario/ItemView'
@@ -12,7 +15,8 @@ import NavBar from './components/NavBar'
 
 function App() {
   return (
-    <>
+    <AuthProvider>
+      <ProtectedRoute>
       <h1 className='text-3xl font-bold'>
         Plataforma Optimizada de Trazabilidad y Organización
       </h1>
@@ -33,7 +37,8 @@ function App() {
         </Routes>
 
       </BrowserRouter>
-    </>
+      </ProtectedRoute>
+    </AuthProvider>
   )
 }
 
