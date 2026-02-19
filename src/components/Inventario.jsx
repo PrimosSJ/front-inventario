@@ -37,7 +37,7 @@ export default function Inventario() {
         return () => {
             socket.off("inventoryUpdate");
         };
-    });
+    }, []);
     
     return (
         <>
