@@ -83,6 +83,7 @@ export default function AgregarItem() {
                     name="categoria"
                     value={newItem.categoria}
                     onChange={handleChange}
+                    permitirNuevo={true}
                 />
             </div>
 

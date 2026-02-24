@@ -92,6 +92,7 @@ export default function ItemView() {
                     name="categoria"
                     value={item.categoria}
                     onChange={handleChange}
+                    permitirNuevo={true}
                 />
             </div>
 
