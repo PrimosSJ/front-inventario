@@ -18,27 +18,27 @@ export default function Inventario() {
         const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
         return nombreMatch && categoriaMatch;
     });
-    
+
     useEffect(() => {
         axios
-        .get(url + "/inventario")
-        .then((res) => {
-            setInventory(res.data);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-    
+            .get(url + "/inventario")
+            .then((res) => {
+                setInventory(res.data);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
         socket.on("inventoryUpdate", (data) => {
             setInventory(data);
             console.log(data);
         });
-    
+
         return () => {
             socket.off("inventoryUpdate");
         };
     }, []);
-    
+
     return (
         <>
             {inventory && (
@@ -66,7 +66,7 @@ export default function Inventario() {
                             </select>
                         </div>
                     </div>
-                    
+
                     <div className="flex justify-end mb-4">
                         <a href="/inventario/agregar" className="btn btn-primary">
                             Agregar Item
@@ -81,7 +81,7 @@ export default function Inventario() {
                                     <th className="text-left">Descripción</th>
                                     <th className="text-left">Precio</th>
                                     <th className="text-left">Categoría</th>
-                                    <th className="text-left">Stock</th>
+                                    <th className="text-center">Disponible</th>
                                     <th className="text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -93,21 +93,29 @@ export default function Inventario() {
                                         <td>{item.descripcion}</td>
                                         <td>{item.precio}</td>
                                         <td>{item.categoria}</td>
-                                        <td>{item.stock}</td>
+                                        <td className="text-right">{item.stock}</td>
                                         <td className="text-center">
-                                            <Link
-                                                to={`/inventario/${item._id}`}
-                                                className="btn btn-primary btn-sm"
-                                            >
-                                                Editar
-                                            </Link>
-                                            <Link
-                                                to={`/new_prestamo/${item._id}`}
-                                                className="btn btn-warning btn-sm"
-                                            >
-                                                Prestar
-                                            </Link>
+                                            <div className="flex justify-center items-center gap-2">
+                                                <Link
+                                                    to={`/inventario/${item._id}`}
+                                                    className="btn btn-primary btn-sm"
+                                                >
+                                                    Editar
+                                                </Link>
 
+                                                {item.stock > 0 ? (
+                                                    <Link
+                                                        to={`/new_prestamo/${item._id}`}
+                                                        className="btn btn-warning btn-sm"
+                                                    >
+                                                        Prestar
+                                                    </Link>
+                                                ) : (
+                                                    <span className="badge badge-error text-white whitespace-nowrap">
+                                                        Sin Stock
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -116,8 +124,6 @@ export default function Inventario() {
                     </div>
                 </div>
             )}
-
         </>
-
-    )
+    );
 }
