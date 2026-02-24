@@ -3,17 +3,14 @@ import io from "socket.io-client";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+import SelectCategoria from "./inventario/SelectCategoria";
+
 import url from "../utils";
 
 const socket = io(url);
 
 export default function Inventario() {
     const [inventory, setInventory] = useState([]);
-
-    const [categorias, setCategorias] = useState([]);
-    const listaCategorias = categorias.map(categoria => 
-        <option value={categoria}>{categoria}</option>
-    );
 
     const [nombreFiltro, setNombreFiltro] = useState("");
     const [categoriaFiltro, setCategoriaFiltro] = useState("");
@@ -26,33 +23,24 @@ export default function Inventario() {
 
     useEffect(() => {
         axios
-        .get(url + "/inventario")
-        .then((res) => {
-            setInventory(res.data);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+            .get(url + "/inventario")
+            .then((res) => {
+                setInventory(res.data);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
 
-        axios
-        .get(url + "/inventario/categorias")
-        .then((res) => {
-            setCategorias(res.data);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-    
         socket.on("inventoryUpdate", (data) => {
             setInventory(data);
             console.log(data);
         });
-    
+
         return () => {
             socket.off("inventoryUpdate");
         };
     }, []);
-    
+
     return (
         <>
             {inventory && (
@@ -67,17 +55,14 @@ export default function Inventario() {
                                 value={nombreFiltro}
                                 onChange={(e) => setNombreFiltro(e.target.value)}
                             />
-                            <select
-                                className="select select-bordered w-full max-w-xs"
+                            <SelectCategoria
                                 value={categoriaFiltro}
                                 onChange={(e) => setCategoriaFiltro(e.target.value)}
-                            >
-                                <option value="">Selecciona una categoría</option>
-                                {listaCategorias}
-                            </select>
+                                className="select select-bordered w-full max-w-xs"
+                            />
                         </div>
                     </div>
-                    
+
                     <div className="flex justify-end mb-4">
                         <a href="/inventario/agregar" className="btn btn-primary">
                             Agregar Item
@@ -118,7 +103,6 @@ export default function Inventario() {
                                             >
                                                 Prestar
                                             </Link>
-
                                         </td>
                                     </tr>
                                 ))}
@@ -127,8 +111,6 @@ export default function Inventario() {
                     </div>
                 </div>
             )}
-
         </>
-
     )
 }
