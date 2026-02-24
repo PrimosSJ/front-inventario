@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 import url from "../../utils";
@@ -11,6 +11,22 @@ export default function AgregarItem() {
         categoria: "",
         stock: "",
     });
+
+    const [categorias, setCategorias] = useState([]);
+    const listaCategorias = categorias.map(categoria => 
+        <option value={categoria}>{categoria}</option>
+    );
+
+    useEffect(() => {
+        axios
+        .get(url + "/inventario/categorias")
+        .then((res) => {
+            setCategorias(res.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -84,10 +100,7 @@ export default function AgregarItem() {
                     className="input input-bordered w-full max-w-xs"
                 >
                     <option value="">Selecciona una categoría</option>
-                    <option value="Oficina">Oficina</option>
-                    <option value="Redes">Redes</option>
-                    <option value="LPA">LPA</option>
-                    <option value="Feria">Feria</option>
+                    {listaCategorias}
                 </select>
             </div>
 

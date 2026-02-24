@@ -14,6 +14,11 @@ export default function ItemView() {
     const { id } = useParams();
     const [item, setItem] = useState(null);
 
+    const [categorias, setCategorias] = useState([]);
+    const listaCategorias = categorias.map(categoria => 
+        <option value={categoria}>{categoria}</option>
+    );
+
     useEffect(() => {
         axios
             .get(url + `/inventario/${id}`)
@@ -23,6 +28,16 @@ export default function ItemView() {
             .catch((err) => {
                 console.log(err);
             });
+
+
+        axios
+        .get(url + "/inventario/categorias")
+        .then((res) => {
+            setCategorias(res.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
     }, [id]);
 
     const handleChange = (e) => {
@@ -94,10 +109,7 @@ export default function ItemView() {
                     className="input input-bordered w-full max-w-xs"
                 >
                     <option value="">Selecciona una categoría</option>
-                    <option value="Oficina">Oficina</option>
-                    <option value="Redes">Redes</option>
-                    <option value="LPA">LPA</option>
-                    <option value="Feria">Feria</option>
+                    {listaCategorias}
                 </select>
             </div>
 

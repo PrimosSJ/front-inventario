@@ -10,6 +10,11 @@ const socket = io(url);
 export default function Inventario() {
     const [inventory, setInventory] = useState([]);
 
+    const [categorias, setCategorias] = useState([]);
+    const listaCategorias = categorias.map(categoria => 
+        <option value={categoria}>{categoria}</option>
+    );
+
     const [nombreFiltro, setNombreFiltro] = useState("");
     const [categoriaFiltro, setCategoriaFiltro] = useState("");
 
@@ -18,12 +23,21 @@ export default function Inventario() {
         const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
         return nombreMatch && categoriaMatch;
     });
-    
+
     useEffect(() => {
         axios
         .get(url + "/inventario")
         .then((res) => {
             setInventory(res.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+
+        axios
+        .get(url + "/inventario/categorias")
+        .then((res) => {
+            setCategorias(res.data);
         })
         .catch((err) => {
             console.log(err);
@@ -59,10 +73,7 @@ export default function Inventario() {
                                 onChange={(e) => setCategoriaFiltro(e.target.value)}
                             >
                                 <option value="">Selecciona una categoría</option>
-                                <option value="Oficina">Oficina</option>
-                                <option value="Redes">Redes</option>
-                                <option value="LPA">LPA</option>
-                                <option value="Feria">Feria</option>
+                                {listaCategorias}
                             </select>
                         </div>
                     </div>
