@@ -3,6 +3,8 @@ import io from "socket.io-client";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+import SelectCategoria from "./inventario/SelectCategoria";
+
 import url from "../utils";
 
 const socket = io(url);
@@ -53,17 +55,11 @@ export default function Inventario() {
                                 value={nombreFiltro}
                                 onChange={(e) => setNombreFiltro(e.target.value)}
                             />
-                            <select
-                                className="select select-bordered w-full max-w-xs"
+                            <SelectCategoria
                                 value={categoriaFiltro}
                                 onChange={(e) => setCategoriaFiltro(e.target.value)}
-                            >
-                                <option value="">Selecciona una categoría</option>
-                                <option value="Oficina">Oficina</option>
-                                <option value="Redes">Redes</option>
-                                <option value="LPA">LPA</option>
-                                <option value="Feria">Feria</option>
-                            </select>
+                                className="select select-bordered w-full max-w-xs"
+                            />
                         </div>
                     </div>
 

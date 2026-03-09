@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import EliminarItem from './EliminarItem';
 import QRgenerator from './QRgenerator';
+import SelectCategoria from './SelectCategoria';
 
 import url from '../../utils';
 
@@ -88,18 +89,12 @@ export default function ItemView() {
             </div>
             <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="categoria">Categoría</label>
-                <select
+                <SelectCategoria
                     name="categoria"
                     value={item.categoria}
                     onChange={handleChange}
-                    className="input input-bordered w-full max-w-xs"
-                >
-                    <option value="">Selecciona una categoría</option>
-                    <option value="Oficina">Oficina</option>
-                    <option value="Redes">Redes</option>
-                    <option value="LPA">LPA</option>
-                    <option value="Feria">Feria</option>
-                </select>
+                    permitirNuevo={true}
+                />
             </div>
 
             <div className="mb-4">
@@ -120,7 +115,6 @@ export default function ItemView() {
             <QRgenerator id={item._id} />
             <EliminarItem id={item._id} />
         </div>
-
     )
 }
 
