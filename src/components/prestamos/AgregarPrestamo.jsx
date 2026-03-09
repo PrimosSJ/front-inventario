@@ -16,6 +16,9 @@ export default function AgregarPrestamo() {
         nombre_producto: "",
         timestamp: "",
         monto: "",
+
+        nombre: "",
+        comentario: ""
     });
 
     function handleChange(e) {
@@ -45,6 +48,9 @@ export default function AgregarPrestamo() {
                     nombre_producto: "",
                     timestamp: "",
                     monto: "",
+
+                    nombre: "",
+                    comentario: ""
                 });
                 navigate("/");
                 console.log(res);
@@ -66,7 +72,20 @@ export default function AgregarPrestamo() {
 
             <RutReader onRutChange={handleRutChange} />
     
+        </div>
+
+            <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">Nombre</label>
+                <input 
+                    type="text" 
+                    placeholder="Nombre" 
+                    name="nombre"
+                    value={newPrestamo.nombre}
+                    onChange={handleChange} 
+                    className="input input-bordered w-full max-w-xs"
+                />
             </div>
+
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id_producto">ID Producto</label>
                 <input 
@@ -78,6 +97,18 @@ export default function AgregarPrestamo() {
                     className="input input-bordered w-full max-w-xs"
                 />
             </div>
+
+            <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">Comentario</label>
+                <textarea 
+                    placeholder="Comentario" 
+                    name="comentario"
+                    value={newPrestamo.comentario}
+                    onChange={handleChange} 
+                    className="textarea textarea-bordered w-full max-w-xs"
+                ></textarea>
+            </div>
+        
             <button
                 onClick={handleAddPrestamo}
                 className="btn btn-xs sm:btn-md lg:btn-lg"
