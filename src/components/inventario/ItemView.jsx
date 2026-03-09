@@ -78,7 +78,8 @@ export default function ItemView() {
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="precio">Precio</label>
                 <input
-                    type="text"
+                    type="number"
+                    min="0"
                     placeholder="Precio"
                     name="precio"
                     value={item.precio}
@@ -99,7 +100,8 @@ export default function ItemView() {
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="stock">Stock</label>
                 <input
-                    type="text"
+                    type="number"
+                    min="0"
                     placeholder="Stock"
                     name="stock"
                     value={item.stock}
