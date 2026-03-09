@@ -81,7 +81,9 @@ export default function Prestamos() {
                                             {prestamo.finalizado ? (
                                                 <span className="badge badge-success">Devuelto</span>
                                             ) : (
-                                                <MarcarDevuelto {...prestamo} />
+                                                <MarcarDevuelto {...prestamo} onUpdate={(updated) => {
+                                                    setPrestamos(prev => prev.map(p => p._id === (updated._id || prestamo._id) ? { ...p, ...updated, finalizado: true } : p));
+                                                }} />
                                             )}
                                         </td>
                                         <td>

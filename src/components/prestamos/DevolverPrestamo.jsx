@@ -2,14 +2,17 @@ import axios from "axios";
 
 import url from "../../utils";
 
-export default function MarcarDevuelto(prestamo) {
+export default function MarcarDevuelto(props) {
+    const { _id, finalizado, onUpdate } = props;
 
     const handleClick = (e) => {
         e.preventDefault();
         axios
-           .patch(url + `/prestamos/return/${prestamo._id}`)
+           .patch(url + `/prestamos/return/${_id}`)
            .then((res) => {
-                console.log(res);
+                // Si el backend devuelve el préstamo actualizado, usarlo; si no, aplicar un cambio optimista
+                const updated = res.data && res.data._id ? res.data : { _id, finalizado: true };
+                if (typeof onUpdate === 'function') onUpdate(updated);
             })
            .catch((err) => {
                 console.log(err);
@@ -20,8 +23,8 @@ export default function MarcarDevuelto(prestamo) {
             <>
                 <button 
                     onClick={handleClick}
-                    disabled={prestamo.finalizado}    
-                    className={`btn btn-sm ${prestamo.finalizado ? 'btn-disabled' : 'btn-primary'}`}
+                    disabled={finalizado}    
+                    className={`btn btn-sm ${finalizado ? 'btn-disabled' : 'btn-primary'}`}
                 >
                     Marcar Devuelto
                 </button>
