@@ -3,6 +3,8 @@ import io from "socket.io-client";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+import SelectCategoria from "./inventario/SelectCategoria";
+
 import url from "../utils";
 
 const socket = io(url);
@@ -18,27 +20,27 @@ export default function Inventario() {
         const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
         return nombreMatch && categoriaMatch;
     });
-    
+
     useEffect(() => {
         axios
-        .get(url + "/inventario")
-        .then((res) => {
-            setInventory(res.data);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-    
+            .get(url + "/inventario")
+            .then((res) => {
+                setInventory(res.data);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
         socket.on("inventoryUpdate", (data) => {
             setInventory(data);
             console.log(data);
         });
-    
+
         return () => {
             socket.off("inventoryUpdate");
         };
     }, []);
-    
+
     return (
         <>
             {inventory && (
@@ -53,20 +55,14 @@ export default function Inventario() {
                                 value={nombreFiltro}
                                 onChange={(e) => setNombreFiltro(e.target.value)}
                             />
-                            <select
-                                className="select select-bordered w-full max-w-xs"
+                            <SelectCategoria
                                 value={categoriaFiltro}
                                 onChange={(e) => setCategoriaFiltro(e.target.value)}
-                            >
-                                <option value="">Selecciona una categoría</option>
-                                <option value="Oficina">Oficina</option>
-                                <option value="Redes">Redes</option>
-                                <option value="LPA">LPA</option>
-                                <option value="Feria">Feria</option>
-                            </select>
+                                className="select select-bordered w-full max-w-xs"
+                            />
                         </div>
                     </div>
-                    
+
                     <div className="flex justify-end mb-4">
                         <a href="/inventario/agregar" className="btn btn-primary">
                             Agregar Item
@@ -107,7 +103,6 @@ export default function Inventario() {
                                             >
                                                 Prestar
                                             </Link>
-
                                         </td>
                                     </tr>
                                 ))}
@@ -116,8 +111,6 @@ export default function Inventario() {
                     </div>
                 </div>
             )}
-
         </>
-
     )
 }
