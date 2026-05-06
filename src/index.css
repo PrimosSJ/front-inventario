@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.date-input-dark::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.7;
+    cursor: pointer;
+}
+.date-input-dark::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}

@@ -12,11 +12,13 @@ import GetAllByRut from './components/prestamos/GetAllByRut'
 import AgregarPrestamo from './components/prestamos/AgregarPrestamo'
 import AgregarItem from './components/inventario/AgregarItem'
 import NavBar from './components/NavBar'
+import AlertasDevoluciones from './components/AlertasDevoluciones'
 
 function App() {
   return (
     <AuthProvider>
       <ProtectedRoute>
+      <AlertasDevoluciones />
       <h1 className='text-3xl font-bold'>
         Plataforma Optimizada de Trazabilidad y Organización
       </h1>

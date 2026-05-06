@@ -1,110 +1,171 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import axios from "axios";
 
-import url from "../utils";
+import url, { api } from "../utils";
 import MarcarDevuelto from "./prestamos/DevolverPrestamo";
+import TiempoRestante from "./prestamos/TiempoRestante";
 
 const socket = io(url);
 
 function formatTimestamp(timestamp) {
-    const date = new Date(timestamp);
-    return date.toLocaleString();
+    if (!timestamp) return "-";
+    const d = new Date(timestamp);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yy = String(d.getFullYear()).slice(-2);
+    const hh = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${dd}/${mm}/${yy} ${hh}:${min}`;
+}
+
+function getPrestamoDate(prestamo) {
+    return prestamo.createdAt || prestamo.timestamp;
+}
+
+function renderTipoPrestamoBadge(tipo) {
+    if (tipo === "especial") {
+        return <span className="badge badge-warning">Especial</span>;
+    }
+    return <span className="badge badge-ghost">Público</span>;
 }
 
 export default function Prestamos() {
     const [prestamos, setPrestamos] = useState([]);
     const [soloPendientes, setSoloPendientes] = useState(true);
-    
+    const [busqueda, setBusqueda] = useState("");
+
     useEffect(() => {
-        axios
-        .get(url + "/prestamos")
-        .then((res) => {
-            setPrestamos(res.data);})
-        .catch((err) => {
-            console.log(err);
-        });
+        api
+            .get("/prestamos")
+            .then((res) => setPrestamos(res.data))
+            .catch((err) => console.log(err));
 
         socket.on("prestamosUpdate", (data) => {
-            setPrestamos(prevPrestamos => {
-                return [data, ...prevPrestamos];
+            setPrestamos((prev) => {
+                if (data && data._id && prev.some((p) => p._id === data._id)) {
+                    return prev.map((p) => (p._id === data._id ? { ...p, ...data } : p));
+                }
+                return [data, ...prev];
             });
-            console.log(data);
         });
 
-        return () => {
-            socket.off("prestamosUpdate");
-        };
+        return () => socket.off("prestamosUpdate");
     }, []);
 
-    const prestamosFiltrados = soloPendientes 
-        ? prestamos.filter(prestamo => !prestamo.finalizado) 
-        : prestamos;    
+    const busquedaLower = busqueda.trim().toLowerCase();
 
+    const prestamosFiltrados = prestamos
+        .filter((p) => (soloPendientes ? !p.finalizado : true))
+        .filter((p) => {
+            if (!busquedaLower) return true;
+            return (
+                (p.nombre || "").toLowerCase().includes(busquedaLower) ||
+                (p.rut || "").toLowerCase().includes(busquedaLower) ||
+                (p.nombre_producto || "").toLowerCase().includes(busquedaLower) ||
+                (p.email || "").toLowerCase().includes(busquedaLower)
+            );
+        });
 
     return (
-        <>
-            {prestamos && (
-                <div className="container mx-auto p-4">
-                    <h1 className="text-3xl font-bold mb-6 text-center">Préstamos</h1>
-                    <div className="flex justify-end items-center mb-4 gap-3">
-                    <span className="text-sm font-semibold text-gray-700">Pendientes</span>
-                    <input 
-                        type="checkbox" 
-                        className="toggle toggle-primary" 
-                        checked={soloPendientes}
-                        onChange={() => setSoloPendientes(!soloPendientes)} 
-                    />
-                    </div>
-                    
-                    <div className="overflow-x-auto">
-                        <table className="table table-zebra w-full">
-                            <thead>
-                                <tr>
-                                    <th className="text-left">Rut</th>
-                                    <th className="text-left">Nombre</th>
-                                    <th className="text-left">Producto</th>
-                                    <th className="text-left">Timestamp</th>
-                                    <th className="text-left">Estado</th>
-                                    <th className="text-left">Comentario</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {prestamosFiltrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                                    .map((prestamo) => (
-                                    <tr key={prestamo._id}>
-                                        <td>{prestamo.rut}</td>
-                                        <td>{prestamo.nombre}</td>
-                                        <td>{prestamo.nombre_producto}</td>
-                                        <td>{formatTimestamp(prestamo.timestamp)}</td>
-                                        <td>
-                                            {prestamo.finalizado ? (
-                                                <span className="badge badge-success">Devuelto</span>
-                                            ) : (
-                                                <MarcarDevuelto {...prestamo} onUpdate={(updated) => {
-                                                    setPrestamos(prev => prev.map(p => p._id === (updated._id || prestamo._id) ? { ...p, ...updated, finalizado: true } : p));
-                                                }} />
-                                            )}
-                                        </td>
-                                        <td>
-                                            {prestamo.comentario ? (
-                                                <button 
-                                                    className="btn btn-ghost btn-xs" 
-                                                    title={prestamo.comentario}
-                                                    onClick={() => alert(`Comentario: ${prestamo.comentario}`)}
-                                                >
-                                                    Ver detalle
-                                                </button> ) 
-                                                : (<span className="text-gray-400">-</span> )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-        </>
+        <div className="container mx-auto p-4">
+            <h1 className="text-3xl font-bold mb-6 text-center">Préstamos</h1>
 
-    )
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre, RUT, producto o email..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    className="input input-bordered w-full sm:max-w-md"
+                />
+                <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-gray-700">Pendientes</span>
+                    <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={soloPendientes}
+                        onChange={() => setSoloPendientes(!soloPendientes)}
+                    />
+                </div>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>Rut</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Producto</th>
+                            <th>Extensión</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Devolución</th>
+                            <th>Estado</th>
+                            <th className="w-8"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {prestamosFiltrados
+                            .sort((a, b) => new Date(getPrestamoDate(b)) - new Date(getPrestamoDate(a)))
+                            .map((prestamo) => (
+                                <tr key={prestamo._id}>
+                                    <td>{prestamo.rut}</td>
+                                    <td>{prestamo.nombre}</td>
+                                    <td className="text-sm">{prestamo.email || "-"}</td>
+                                    <td>{prestamo.nombre_producto}</td>
+                                    <td className="font-mono text-sm">
+                                        {prestamo.extension_codigo || "-"}
+                                    </td>
+                                    <td>{renderTipoPrestamoBadge(prestamo.tipo_prestamo)}</td>
+                                    <td>{formatTimestamp(getPrestamoDate(prestamo))}</td>
+                                    <td>
+                                        {prestamo.tipo_prestamo === "especial" &&
+                                        prestamo.fecha_devolucion_esperada &&
+                                        !prestamo.finalizado ? (
+                                            <TiempoRestante fechaIso={prestamo.fecha_devolucion_esperada} />
+                                        ) : prestamo.tipo_prestamo === "especial" &&
+                                          prestamo.fecha_devolucion_esperada &&
+                                          prestamo.finalizado ? (
+                                            <span className="text-sm text-gray-400">
+                                                Devuelto {formatTimestamp(prestamo.updatedAt)}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400">-</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        {prestamo.finalizado ? (
+                                            <span className="badge badge-ghost">Devuelto</span>
+                                        ) : (
+                                            <MarcarDevuelto
+                                                {...prestamo}
+                                                onUpdate={(updated) => {
+                                                    setPrestamos((prev) =>
+                                                        prev.map((p) =>
+                                                            p._id === (updated._id || prestamo._id)
+                                                                ? { ...p, ...updated, finalizado: true }
+                                                                : p
+                                                        )
+                                                    );
+                                                }}
+                                            />
+                                        )}
+                                    </td>
+                                    <td className="text-center">
+                                        {prestamo.comentario ? (
+                                            <div className="tooltip tooltip-left" data-tip={prestamo.comentario}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-info cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        ) : null}
+                                    </td>
+                                </tr>
+                            ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 }

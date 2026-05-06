@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import url from "../../utils";
+import { api } from "../../utils";
 
 export default function SelectCategoria({ value, onChange, name, className, permitirNuevo=false }) {
     const [categorias, setCategorias] = useState([]);
     const [nuevo, setNuevo] = useState(false);
 
     useEffect(() => {
-        axios
-            .get(url + "/inventario/categorias")
+        api
+            .get("/inventario/categorias")
             .then((res) => {
                 const categoriasCargadas = res.data;
                 setCategorias(res.data);
