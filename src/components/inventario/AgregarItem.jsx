@@ -23,7 +23,6 @@ export default function AgregarItem() {
         categoria: "",
         stock: "",
         tipo: "unitario",
-        tipo_prestamo: "publico",
     });
 
     const [extensiones, setExtensiones] = useState([]);
@@ -79,7 +78,6 @@ export default function AgregarItem() {
             descripcion: newItem.descripcion,
             categoria: newItem.categoria,
             tipo: newItem.tipo,
-            tipo_prestamo: newItem.tipo_prestamo,
         };
 
         if (newItem.tipo === "categoria") {
@@ -164,19 +162,6 @@ export default function AgregarItem() {
                 >
                     <option value="unitario">Producto Unitario</option>
                     <option value="categoria">Categoría (múltiples unidades)</option>
-                </select>
-            </div>
-
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Tipo de Préstamo</label>
-                <select
-                    name="tipo_prestamo"
-                    value={newItem.tipo_prestamo}
-                    onChange={handleChange}
-                    className="select select-bordered w-full max-w-xs"
-                >
-                    <option value="publico">Público</option>
-                    <option value="especial">Especial</option>
                 </select>
             </div>
 
@@ -282,7 +267,7 @@ export default function AgregarItem() {
 
             <button
                 onClick={handleAddItem}
-                className="btn btn-xs sm:btn-md lg:btn-lg"
+                className="btn btn-primary btn-xs sm:btn-md lg:btn-lg"
             >
                 Agregar
             </button>

@@ -18,6 +18,9 @@ export default function AgregarPrestamo() {
     const [searchQuery, setSearchQuery] = useState("");
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
+    // tipo_prestamo is chosen at loan time, not from the product
+    const [esEspecial, setEsEspecial] = useState(false);
+
     const [form, setForm] = useState({
         rut: "",
         nombre: "",
@@ -94,7 +97,7 @@ export default function AgregarPrestamo() {
             return;
         }
 
-        const tipoPrestamo = producto.tipo_prestamo || "publico";
+        const tipoPrestamo = esEspecial ? "especial" : "publico";
 
         if (!form.rut || !form.nombre || !form.email) {
             setError("RUT, nombre y email son obligatorios");
@@ -154,8 +157,6 @@ export default function AgregarPrestamo() {
             });
     }
 
-    const tipoPrestamo = producto?.tipo_prestamo || "publico";
-    const esEspecial = tipoPrestamo === "especial";
     const esCategoria = producto?.tipo === "categoria";
 
     return (
@@ -201,9 +202,7 @@ export default function AgregarPrestamo() {
                                     onMouseDown={() => handleSelectProduct(p)}
                                 >
                                     <span className="font-semibold">{p.nombre}</span>
-                                    <span className="text-xs text-gray-400">
-                                        {p.categoria} · {p.tipo_prestamo === "especial" ? "Especial" : "Público"}
-                                    </span>
+                                    <span className="text-xs text-gray-400">{p.categoria}</span>
                                 </li>
                             ))}
                         </ul>
@@ -220,16 +219,28 @@ export default function AgregarPrestamo() {
                 <div className="mb-4 p-3 bg-base-200 rounded">
                     <p className="text-sm text-gray-600">Producto a prestar:</p>
                     <p className="font-bold">{producto.nombre}</p>
-                    <div className="flex gap-2 mt-1">
-                        <span className="badge badge-sm">
-                            {producto.tipo === "categoria" ? "Categoría" : "Unitario"}
-                        </span>
-                        <span className={`badge badge-sm ${esEspecial ? "badge-warning" : "badge-ghost"}`}>
-                            {esEspecial ? "Especial" : "Público"}
-                        </span>
-                    </div>
+                    <span className="badge badge-sm mt-1">
+                        {producto.tipo === "categoria" ? "Categoría" : "Unitario"}
+                    </span>
                 </div>
             )}
+
+            {/* Tipo de préstamo — se decide al momento del préstamo */}
+            <div className="mb-4 flex items-center gap-3">
+                <label className="text-sm font-bold">Préstamo Especial</label>
+                <input
+                    type="checkbox"
+                    className="toggle toggle-warning"
+                    checked={esEspecial}
+                    onChange={(e) => {
+                        setEsEspecial(e.target.checked);
+                        if (!e.target.checked) {
+                            setForm((prev) => ({ ...prev, telefono: "", fecha_devolucion_esperada: "" }));
+                        }
+                    }}
+                />
+                {esEspecial && <span className="badge badge-warning badge-sm">Especial</span>}
+            </div>
 
             <div className="mb-4">
                 <RutReader onRutChange={handleRutChange} />

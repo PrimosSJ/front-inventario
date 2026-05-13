@@ -19,7 +19,6 @@ function exportarExcel(inventory) {
         Descripción: item.descripcion,
         Categoría: item.categoria,
         Tipo: item.tipo === "categoria" ? "categoría" : "unitario",
-        "Tipo Préstamo": item.tipo_prestamo === "especial" ? "especial" : "público",
         Stock: item.stock,
         Extensiones:
             item.tipo === "categoria"
@@ -60,7 +59,6 @@ function parsearExcel(file) {
                     descripcion: String(row["Descripción"] || "").trim(),
                     categoria: String(row["Categoría"] || "").trim(),
                     tipo: String(row["Tipo"] || "unitario").trim().toLowerCase() === "categoría" ? "categoria" : "unitario",
-                    tipo_prestamo: String(row["Tipo Préstamo"] || "público").trim().toLowerCase() === "especial" ? "especial" : "publico",
                     stock: parseInt(row["Stock"]) || 0,
                 }));
 
@@ -74,6 +72,25 @@ function parsearExcel(file) {
     });
 }
 
+const ComentarioIcon = ({ comentario, onClick }) => (
+    <div className="flex justify-start">
+        <div
+            className={`tooltip tooltip-left cursor-pointer ${comentario ? "text-warning" : "text-base-content/50 hover:text-info"}`}
+            data-tip={comentario || "Agregar comentario"}
+            onClick={onClick}
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+            >
+                <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+            </svg>
+        </div>
+    </div>
+);
+
 export default function Inventario() {
     const [inventory, setInventory] = useState([]);
     const [expandidos, setExpandidos] = useState({});
@@ -85,6 +102,11 @@ export default function Inventario() {
     const [importResult, setImportResult] = useState(null);
     const [importando, setImportando] = useState(false);
     const fileInputRef = useRef(null);
+
+    // Extension comment modal state
+    const [modalExt, setModalExt] = useState(null); // { itemId, codigo }
+    const [modalComentario, setModalComentario] = useState("");
+    const [guardandoComentario, setGuardandoComentario] = useState(false);
 
     const filteredInventory = (inventory || []).filter((item) => {
         const nombreMatch = item.nombre.toLowerCase().includes(nombreFiltro.toLowerCase());
@@ -104,13 +126,6 @@ export default function Inventario() {
 
     const toggleExpand = (id) => {
         setExpandidos((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const renderTipoPrestamoBadge = (tipoPrestamo) => {
-        if (tipoPrestamo === "especial") {
-            return <span className="badge badge-warning">Especial</span>;
-        }
-        return <span className="badge badge-ghost">Público</span>;
     };
 
     const handleFileChange = async (e) => {
@@ -135,7 +150,6 @@ export default function Inventario() {
             const res = await api.post("/inventario/bulk", { items: importPreview });
             setImportResult(res.data);
             setImportPreview(null);
-            // Reload inventory
             const inv = await api.get("/inventario");
             setInventory(inv.data);
         } catch (err) {
@@ -143,6 +157,36 @@ export default function Inventario() {
             setImportPreview(null);
         } finally {
             setImportando(false);
+        }
+    };
+
+    const handleGuardarComentario = async () => {
+        if (!modalExt) return;
+        setGuardandoComentario(true);
+        try {
+            await api.patch(
+                `/inventario/${modalExt.itemId}/extensiones/${modalExt.codigo}/comentario`,
+                { comentario: modalComentario }
+            );
+            setInventory((prev) =>
+                prev.map((item) => {
+                    if (item._id !== modalExt.itemId) return item;
+                    return {
+                        ...item,
+                        extensiones: item.extensiones.map((ext) =>
+                            ext.codigo === modalExt.codigo
+                                ? { ...ext, comentario: modalComentario }
+                                : ext
+                        ),
+                    };
+                })
+            );
+            setModalExt(null);
+            setModalComentario("");
+        } catch (err) {
+            console.error("Error al guardar comentario:", err);
+        } finally {
+            setGuardandoComentario(false);
         }
     };
 
@@ -231,7 +275,6 @@ export default function Inventario() {
                                             <th>Nombre</th>
                                             <th>Categoría</th>
                                             <th>Tipo</th>
-                                            <th>Tipo Préstamo</th>
                                             <th>Stock</th>
                                         </tr>
                                     </thead>
@@ -241,7 +284,6 @@ export default function Inventario() {
                                                 <td>{item.nombre || <span className="text-error">vacío</span>}</td>
                                                 <td>{item.categoria}</td>
                                                 <td>{item.tipo}</td>
-                                                <td>{item.tipo_prestamo}</td>
                                                 <td>{item.stock}</td>
                                             </tr>
                                         ))}
@@ -268,6 +310,38 @@ export default function Inventario() {
                     </div>
                 )}
 
+                {/* Extension comment modal */}
+                {modalExt && (
+                    <div className="modal modal-open">
+                        <div className="modal-box">
+                            <h3 className="font-bold text-lg mb-4 font-mono">{modalExt.codigo}</h3>
+                            <textarea
+                                className="textarea textarea-bordered w-full"
+                                placeholder="Observación sobre esta extensión..."
+                                value={modalComentario}
+                                onChange={(e) => setModalComentario(e.target.value)}
+                                rows={3}
+                            />
+                            <div className="modal-action">
+                                <button
+                                    className="btn btn-ghost"
+                                    onClick={() => { setModalExt(null); setModalComentario(""); }}
+                                    disabled={guardandoComentario}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleGuardarComentario}
+                                    disabled={guardandoComentario}
+                                >
+                                    {guardandoComentario ? "Guardando..." : "Guardar"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="overflow-x-auto">
                     <table className="table table-zebra w-full">
                         <thead>
@@ -277,7 +351,6 @@ export default function Inventario() {
                                 <th className="text-left">Descripción</th>
                                 <th className="text-left">Categoría</th>
                                 <th className="text-left">Tipo</th>
-                                <th className="text-left">Tipo Préstamo</th>
                                 <th className="text-center">Disponible</th>
                                 <th className="text-center">Acciones</th>
                             </tr>
@@ -313,7 +386,6 @@ export default function Inventario() {
                                                     <span className="badge">Unitario</span>
                                                 )}
                                             </td>
-                                            <td>{renderTipoPrestamoBadge(item.tipo_prestamo)}</td>
                                             <td className="text-right">
                                                 {esCategoria
                                                     ? `${disponibles} / ${(item.extensiones || []).length}`
@@ -354,7 +426,7 @@ export default function Inventario() {
 
                                         {esCategoria && expandido && (
                                             <tr key={`${item._id}-ext`}>
-                                                <td colSpan={8} className="p-0">
+                                                <td colSpan={7} className="p-0">
                                                     <div className="bg-base-200 pl-12 pr-4 py-3">
                                                         <p className="font-semibold text-sm mb-2">Extensiones:</p>
                                                         {(item.extensiones || []).length === 0 ? (
@@ -362,23 +434,39 @@ export default function Inventario() {
                                                                 Sin extensiones registradas.
                                                             </p>
                                                         ) : (
-                                                            <table className="table table-sm w-full bg-base-300 rounded">
+                                                            <table className="table table-sm table-fixed w-full bg-base-300 rounded">
+                                                                <colgroup>
+                                                                    <col className="w-48" />
+                                                                    <col className="w-40" />
+                                                                    <col />
+                                                                </colgroup>
                                                                 <thead>
                                                                     <tr>
                                                                         <th className="text-left">Código</th>
                                                                         <th className="text-left">Estado</th>
+                                                                        <th className="text-left">Comentario</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
                                                                     {(item.extensiones || []).map((ext) => (
                                                                         <tr key={ext.codigo}>
-                                                                            <td className="font-mono text-sm">{ext.codigo}</td>
-                                                                            <td>
+                                                                            <td className="font-mono text-sm py-2 px-3">{ext.codigo}</td>
+                                                                            <td className="py-2 px-3">
                                                                                 {ext.disponible ? (
                                                                                     <span className="badge badge-success badge-sm">Disponible</span>
                                                                                 ) : (
                                                                                     <span className="badge badge-error badge-sm">Prestado</span>
                                                                                 )}
+                                                                            </td>
+                                                                            <td className="py-2 px-3">
+                                                                                <ComentarioIcon
+                                                                                    comentario={ext.comentario}
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        setModalExt({ itemId: item._id, codigo: ext.codigo });
+                                                                                        setModalComentario(ext.comentario || "");
+                                                                                    }}
+                                                                                />
                                                                             </td>
                                                                         </tr>
                                                                     ))}

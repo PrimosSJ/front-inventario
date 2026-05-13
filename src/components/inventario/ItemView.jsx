@@ -94,7 +94,7 @@ export default function ItemView() {
         }
 
         setGenError(null);
-        setPreview(nuevos.map((c) => ({ codigo: c, disponible: true })));
+        setPreview(nuevos.map((c) => ({ codigo: c, disponible: true, comentario: "" })));
     };
 
     const handleLimpiarPreview = () => {
@@ -130,7 +130,6 @@ export default function ItemView() {
             descripcion: item.descripcion,
             categoria: item.categoria,
             tipo: item.tipo,
-            tipo_prestamo: item.tipo_prestamo,
         };
 
         if (item.tipo === "categoria") {
@@ -200,19 +199,6 @@ export default function ItemView() {
             </div>
 
             <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Tipo de Préstamo</label>
-                <select
-                    name="tipo_prestamo"
-                    value={item.tipo_prestamo || "publico"}
-                    onChange={handleChange}
-                    className="select select-bordered w-full max-w-xs"
-                >
-                    <option value="publico">Público</option>
-                    <option value="especial">Especial</option>
-                </select>
-            </div>
-
-            <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">Tipo</label>
                 <p className="text-sm">
                     {item.tipo === "categoria" ? "Categoría (múltiples unidades)" : "Producto Unitario"}
@@ -248,12 +234,17 @@ export default function ItemView() {
                                     key={ext.codigo}
                                     className="flex justify-between items-center py-1"
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-sm">{ext.codigo}</span>
-                                        {ext.disponible ? (
-                                            <span className="badge badge-success badge-sm">Disponible</span>
-                                        ) : (
-                                            <span className="badge badge-error badge-sm">Prestado</span>
+                                    <div className="flex flex-col gap-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono text-sm">{ext.codigo}</span>
+                                            {ext.disponible ? (
+                                                <span className="badge badge-success badge-sm">Disponible</span>
+                                            ) : (
+                                                <span className="badge badge-error badge-sm">Prestado</span>
+                                            )}
+                                        </div>
+                                        {ext.comentario && (
+                                            <span className="text-xs text-gray-400">{ext.comentario}</span>
                                         )}
                                     </div>
                                     {ext.disponible && (
