@@ -44,12 +44,12 @@ input, button, textarea, select {
   .btn {
     @apply relative overflow-hidden;
 
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.4) inset, 
                 0 -1px 0 0 rgba(0, 0, 0, 0.1) inset;
 
     &::before {
       content: "";
-      @apply bg-gradient-to-b from-transparent from-25% to-black/10 absolute left-0 top-0 size-full;
+      @apply bg-gradient-to-b from-transparent from-25% to-black/25 absolute left-0 top-0 size-full;
     }
 
     &:active {
