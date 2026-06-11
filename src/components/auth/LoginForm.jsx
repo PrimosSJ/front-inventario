@@ -63,7 +63,6 @@ const LoginForm = () => {
 								required
 							/>
 						</label>
-						<div className="validator-hint hidden">Enter valid email address</div>
 					</fieldset>
 					<fieldset className="fieldset">
 						<legend className="fieldset-legend">Contraseña</legend>
