@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import PropTypes from "prop-types";
 import SelectCategoria from "./SelectCategoria";
 import { api } from "../../utils";
 
 const RANGO_MAX = 50;
 
+/**
+ * Generates an array of formatted extension codes.
+ */
 function generarCodigos(prefijo, desde, hasta) {
     const codigos = [];
     for (let i = desde; i <= hasta; i++) {
@@ -14,9 +16,10 @@ function generarCodigos(prefijo, desde, hasta) {
     return codigos;
 }
 
-export default function AgregarItem() {
-    const navigate = useNavigate();
-
+/**
+ * Form component to add a new inventory item. Designed to be embedded within a modal.
+ */
+export default function AgregarItem({ onClose }) {
     const [newItem, setNewItem] = useState({
         nombre: "",
         descripcion: "",
@@ -95,7 +98,10 @@ export default function AgregarItem() {
             .post("/inventario", payload)
             .then(() => {
                 setToast({ tipo: "success", mensaje: "Item agregado exitosamente" });
-                setTimeout(() => navigate("/inventario"), 1500);
+                // Let the user see the success message briefly before closing the modal
+                setTimeout(() => {
+                    onClose();
+                }, 1000);
             })
             .catch((err) => {
                 const msg = err.response?.data?.message || "Error al agregar item";
@@ -105,172 +111,171 @@ export default function AgregarItem() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-5 border rounded shadow-md">
-            <h2 className="text-2xl font-bold mb-5">Agregar Item</h2>
+        <div className="w-full flex flex-col gap-4">
+            <div>
+                <h2 className="text-2xl font-bold">Agregar Item</h2>
+                <p className="text-sm text-base-content/70">Registra un nuevo producto en el sistema.</p>
+            </div>
 
             {toast && (
-                <div className={`alert ${toast.tipo === "success" ? "alert-success" : "alert-error"} mb-4`}>
+                <div className={`alert ${toast.tipo === "success" ? "alert-success" : "alert-error"} py-2`}>
                     <span>{toast.mensaje}</span>
                 </div>
             )}
 
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Nombre</label>
-                <input
-                    type="text"
-                    placeholder="Nombre"
-                    name="nombre"
-                    value={newItem.nombre}
-                    onChange={handleChange}
-                    className="input input-bordered w-full max-w-xs"
-                />
-            </div>
-
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Descripción</label>
-                <input
-                    type="text"
-                    placeholder="Descripción"
-                    name="descripcion"
-                    value={newItem.descripcion}
-                    onChange={handleChange}
-                    className="input input-bordered w-full max-w-xs"
-                />
-            </div>
-
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Categoría</label>
-                <SelectCategoria
-                    name="categoria"
-                    value={newItem.categoria}
-                    onChange={handleChange}
-                    permitirNuevo={true}
-                />
-            </div>
-
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Tipo</label>
-                <select
-                    name="tipo"
-                    value={newItem.tipo}
-                    onChange={(e) => {
-                        handleChange(e);
-                        setExtensiones([]);
-                        setGenError(null);
-                    }}
-                    className="select select-bordered w-full max-w-xs"
-                >
-                    <option value="unitario">Producto Unitario</option>
-                    <option value="categoria">Categoría (múltiples unidades)</option>
-                </select>
-            </div>
-
-            {newItem.tipo === "unitario" && (
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Stock</label>
+            <div className="grid gap-3">
+                <div>
+                    <label className="block text-sm font-bold mb-1">Nombre</label>
                     <input
-                        type="number"
-                        min="0"
-                        placeholder="Stock"
-                        name="stock"
-                        value={newItem.stock}
+                        type="text"
+                        placeholder="Nombre"
+                        name="nombre"
+                        value={newItem.nombre}
                         onChange={handleChange}
-                        className="input input-bordered w-full max-w-xs"
+                        className="input input-bordered w-full"
                     />
                 </div>
-            )}
 
-            {newItem.tipo === "categoria" && (
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Extensiones{extensiones.length > 0 ? ` (${extensiones.length})` : ""}
-                    </label>
-                    <p className="text-xs text-gray-500 mb-3">
-                        Stock calculado automáticamente: {extensiones.length}
-                    </p>
-
-                    {/* Generator */}
-                    <div className="bg-base-200 rounded p-3 mb-3">
-                        <div className="mb-2">
-                            <label className="block text-xs font-semibold mb-1 text-gray-600">
-                                Prefijo de extensión
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="Ej: NBP, RT, CALC"
-                                value={prefijo}
-                                onChange={(e) => setPrefijo(e.target.value.toUpperCase())}
-                                className="input input-bordered input-sm w-full max-w-xs font-mono"
-                            />
-                        </div>
-
-                        <div className="flex gap-3 mb-2">
-                            <div className="flex-1">
-                                <label className="block text-xs font-semibold mb-1 text-gray-600">Desde</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={desde}
-                                    onChange={(e) => setDesde(parseInt(e.target.value) || 1)}
-                                    className="input input-bordered input-sm w-full"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="block text-xs font-semibold mb-1 text-gray-600">Hasta</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={hasta}
-                                    onChange={(e) => setHasta(parseInt(e.target.value) || 1)}
-                                    className="input input-bordered input-sm w-full"
-                                />
-                            </div>
-                        </div>
-
-                        {genError && (
-                            <p className="text-xs text-error mb-2">{genError}</p>
-                        )}
-
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={handleGenerar}
-                                className="btn btn-sm btn-primary"
-                            >
-                                Generar
-                            </button>
-                            {extensiones.length > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={handleLimpiar}
-                                    className="btn btn-sm btn-ghost"
-                                >
-                                    Limpiar
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Preview */}
-                    {extensiones.length > 0 && (
-                        <ul className="border rounded p-2 bg-base-100 max-h-48 overflow-y-auto">
-                            {extensiones.map((ext) => (
-                                <li key={ext.codigo} className="flex items-center gap-2 py-1">
-                                    <span className="font-mono text-sm flex-1">{ext.codigo}</span>
-                                    <span className="badge badge-success badge-sm">Disponible</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                <div>
+                    <label className="block text-sm font-bold mb-1">Descripción</label>
+                    <input
+                        type="text"
+                        placeholder="Descripción"
+                        name="descripcion"
+                        value={newItem.descripcion}
+                        onChange={handleChange}
+                        className="input input-bordered w-full"
+                    />
                 </div>
-            )}
 
-            <button
-                onClick={handleAddItem}
-                className="btn btn-primary btn-xs sm:btn-md lg:btn-lg"
-            >
-                Agregar
-            </button>
+                <div>
+                    <label className="block text-sm font-bold mb-1">Categoría</label>
+                    <SelectCategoria
+                        name="categoria"
+                        value={newItem.categoria}
+                        onChange={handleChange}
+                        permitirNuevo={true}
+                        className="select select-bordered w-full"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-bold mb-1">Tipo</label>
+                    <select
+                        name="tipo"
+                        value={newItem.tipo}
+                        onChange={(e) => {
+                            handleChange(e);
+                            setExtensiones([]);
+                            setGenError(null);
+                        }}
+                        className="select select-bordered w-full"
+                    >
+                        <option value="unitario">Producto Unitario</option>
+                        <option value="categoria">Categoría (múltiples unidades)</option>
+                    </select>
+                </div>
+
+                {newItem.tipo === "unitario" && (
+                    <div>
+                        <label className="block text-sm font-bold mb-1">Stock inicial</label>
+                        <input
+                            type="number"
+                            min="0"
+                            placeholder="Stock"
+                            name="stock"
+                            value={newItem.stock}
+                            onChange={handleChange}
+                            className="input input-bordered w-full"
+                        />
+                    </div>
+                )}
+
+                {newItem.tipo === "categoria" && (
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="text-sm font-bold">
+                                Extensiones {extensiones.length > 0 && `(${extensiones.length})`}
+                            </label>
+                        </div>
+
+                        {/* Generator */}
+                        <div className="bg-base-200 rounded p-3 mb-3 border border-base-300">
+                            <div className="mb-2">
+                                <label className="block text-xs font-semibold mb-1">Prefijo de extensión</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: NBP, RT, CALC"
+                                    value={prefijo}
+                                    onChange={(e) => setPrefijo(e.target.value.toUpperCase())}
+                                    className="input input-bordered input-sm w-full font-mono"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 mb-2">
+                                <div className="flex-1">
+                                    <label className="block text-xs font-semibold mb-1">Desde</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={desde}
+                                        onChange={(e) => setDesde(parseInt(e.target.value) || 1)}
+                                        className="input input-bordered input-sm w-full"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <label className="block text-xs font-semibold mb-1">Hasta</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={hasta}
+                                        onChange={(e) => setHasta(parseInt(e.target.value) || 1)}
+                                        className="input input-bordered input-sm w-full"
+                                    />
+                                </div>
+                            </div>
+
+                            {genError && <p className="text-xs text-error mb-2">{genError}</p>}
+
+                            <div className="flex gap-2 mt-3">
+                                <button type="button" onClick={handleGenerar} className="btn btn-sm btn-primary">
+                                    Generar
+                                </button>
+                                {extensiones.length > 0 && (
+                                    <button type="button" onClick={handleLimpiar} className="btn btn-sm btn-ghost">
+                                        Limpiar
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Preview */}
+                        {extensiones.length > 0 && (
+                            <ul className="border border-base-300 rounded p-2 bg-base-100 max-h-40 overflow-y-auto">
+                                {extensiones.map((ext) => (
+                                    <li key={ext.codigo} className="flex items-center gap-2 py-1 border-b border-base-200 last:border-0">
+                                        <span className="font-mono text-sm flex-1">{ext.codigo}</span>
+                                        <span className="badge badge-success badge-sm">Disponible</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <div className="modal-action mt-2">
+                <button type="button" onClick={onClose} className="btn btn-ghost">
+                    Cancelar
+                </button>
+                <button onClick={handleAddItem} className="btn btn-primary">
+                    Guardar Item
+                </button>
+            </div>
         </div>
     );
 }
+
+AgregarItem.propTypes = {
+    onClose: PropTypes.func.isRequired,
+};

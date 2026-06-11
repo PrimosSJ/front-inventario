@@ -7,11 +7,12 @@ import SelectCategoria from "./inventario/SelectCategoria";
 import url, { api } from "../utils";
 import { exportarExcel, parsearExcel } from "../services/excel.service";
 import CommentIcon from "./icons/comment";
+import AgregarItem from "./inventario/AgregarItem";
 
 const socket = io(url);
 
 // ==========================================
-// CUSTOM HOOKS (Lógica de estado)
+// CUSTOM HOOKS
 // ==========================================
 
 function useInventoryData() {
@@ -353,23 +354,22 @@ InventoryRow.propTypes = {
 // ==========================================
 
 export default function Inventario() {
-    // 1. Lógica de Datos
     const {
         inventory, setInventory, expandidos, toggleExpand,
         nombreFiltro, setNombreFiltro, categoriaFiltro, setCategoriaFiltro, filteredInventory
     } = useInventoryData();
 
-    // 2. Lógica de Importación
     const {
         importPreview, setImportPreview, importError, setImportError, importResult, setImportResult,
         importando, fileInputRef, handleFileChange, confirmarImport
     } = useExcelImport(setInventory);
 
-    // 3. Lógica de Comentarios
     const {
         modalExt, setModalExt, modalComentario, setModalComentario,
         guardandoComentario, handleGuardarComentario
     } = useExtensionComments(setInventory);
+
+    const [showAddModal, setShowAddModal] = useState(false);
 
     return (
         <div className="container mx-auto p-4 space-y-2">
@@ -429,11 +429,19 @@ export default function Inventario() {
                         ↑ Importar Excel
                     </button>
                     <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
-                    <Link to="/inventario/agregar" className="btn btn-primary btn-sm">
+                    <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
                         + Agregar Item
-                    </Link>
+                    </button>
                 </div>
             </div>
+
+            {showAddModal && (
+                <div className="modal modal-open">
+                    <div className="modal-box">
+                        <AgregarItem onClose={() => setShowAddModal(false)} />
+                    </div>
+                </div>
+            )}
 
             <ImportPreviewModal
                 importPreview={importPreview}

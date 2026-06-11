@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../../utils";
 
-export default function SelectCategoria({ value, onChange, name, className, permitirNuevo=false }) {
+export default function SelectCategoria({ value, onChange, name, className, permitirNuevo = false }) {
     const [categorias, setCategorias] = useState([]);
     const [nuevo, setNuevo] = useState(false);
 
@@ -37,7 +37,7 @@ export default function SelectCategoria({ value, onChange, name, className, perm
         <div>
             <select
                 name={name}
-                className={className || "input input-bordered w-full max-w-xs"}
+                className={className || "input input-bordered input-sm w-full max-w-xs"}
                 value={nuevo ? "__NUEVO__" : value}
                 onChange={handleSelectChange}
             >
@@ -63,7 +63,7 @@ export default function SelectCategoria({ value, onChange, name, className, perm
                     value={value}
                     onChange={onChange}
                     placeholder="Nueva categoría..."
-                    className="input input-bordered w-full max-w-xs mt-2"
+                    className="input input-bordered input-sm w-full max-w-xs mt-2"
                     autoFocus
                 />
             )}
