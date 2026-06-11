@@ -1,77 +1,15 @@
 import { useEffect, useState, Fragment, useRef } from "react";
 import io from "socket.io-client";
 import { Link } from "react-router-dom";
-import * as XLSX from "xlsx";
+import PropTypes from 'prop-types';
 
 import SelectCategoria from "./inventario/SelectCategoria";
-
 import url, { api } from "../utils";
+import { exportarExcel, parsearExcel } from "../services/excel.service";
 
 const socket = io(url);
 
-function fechaHoy() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function exportarExcel(inventory) {
-    const rows = inventory.map((item) => ({
-        Nombre: item.nombre,
-        Descripción: item.descripcion,
-        Categoría: item.categoria,
-        Tipo: item.tipo === "categoria" ? "categoría" : "unitario",
-        Stock: item.stock,
-        Extensiones:
-            item.tipo === "categoria"
-                ? (item.extensiones || []).map((e) => e.codigo).join(", ")
-                : "",
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Inventario");
-    XLSX.writeFile(wb, `inventario_POTO_${fechaHoy()}.xlsx`);
-}
-
-const COLUMNAS_REQUERIDAS = ["Nombre", "Descripción", "Categoría", "Stock"];
-
-function parsearExcel(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const wb = XLSX.read(data, { type: "array" });
-                const ws = wb.Sheets[wb.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
-
-                if (rows.length === 0) {
-                    return reject("El archivo está vacío.");
-                }
-
-                const headers = Object.keys(rows[0]);
-                const faltantes = COLUMNAS_REQUERIDAS.filter((c) => !headers.includes(c));
-                if (faltantes.length > 0) {
-                    return reject(`Columnas faltantes: ${faltantes.join(", ")}`);
-                }
-
-                const items = rows.map((row) => ({
-                    nombre: String(row["Nombre"] || "").trim(),
-                    descripcion: String(row["Descripción"] || "").trim(),
-                    categoria: String(row["Categoría"] || "").trim(),
-                    tipo: String(row["Tipo"] || "unitario").trim().toLowerCase() === "categoría" ? "categoria" : "unitario",
-                    stock: parseInt(row["Stock"]) || 0,
-                }));
-
-                resolve(items);
-            } catch (err) {
-                reject("Error al leer el archivo: " + err.message);
-            }
-        };
-        reader.onerror = () => reject("Error al leer el archivo.");
-        reader.readAsArrayBuffer(file);
-    });
-}
-
+// --- Sub-Components ---
 const ComentarioIcon = ({ comentario, onClick }) => (
     <div className="flex justify-start">
         <div
@@ -79,44 +17,28 @@ const ComentarioIcon = ({ comentario, onClick }) => (
             data-tip={comentario || "Agregar comentario"}
             onClick={onClick}
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
             </svg>
         </div>
     </div>
 );
 
-export default function Inventario() {
+ComentarioIcon.propTypes = {
+    comentario: PropTypes.string,
+    onClick: PropTypes.func.isRequired,
+};
+
+// --- Custom Hooks for Logic Separation ---
+
+function useInventoryData() {
     const [inventory, setInventory] = useState([]);
     const [expandidos, setExpandidos] = useState({});
     const [nombreFiltro, setNombreFiltro] = useState("");
     const [categoriaFiltro, setCategoriaFiltro] = useState("");
 
-    const [importPreview, setImportPreview] = useState(null);
-    const [importError, setImportError] = useState(null);
-    const [importResult, setImportResult] = useState(null);
-    const [importando, setImportando] = useState(false);
-    const fileInputRef = useRef(null);
-
-    // Extension comment modal state
-    const [modalExt, setModalExt] = useState(null); // { itemId, codigo }
-    const [modalComentario, setModalComentario] = useState("");
-    const [guardandoComentario, setGuardandoComentario] = useState(false);
-
-    const filteredInventory = (inventory || []).filter((item) => {
-        const nombreMatch = item.nombre.toLowerCase().includes(nombreFiltro.toLowerCase());
-        const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
-        return nombreMatch && categoriaMatch;
-    });
-
     useEffect(() => {
-        api
-            .get("/inventario")
+        api.get("/inventario")
             .then((res) => setInventory(res.data))
             .catch((err) => console.log(err));
 
@@ -127,6 +49,28 @@ export default function Inventario() {
     const toggleExpand = (id) => {
         setExpandidos((prev) => ({ ...prev, [id]: !prev[id] }));
     };
+
+    const filteredInventory = (inventory || []).filter((item) => {
+        const nombreMatch = item.nombre.toLowerCase().includes(nombreFiltro.toLowerCase());
+        const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
+        return nombreMatch && categoriaMatch;
+    });
+
+    return {
+        inventory, setInventory,
+        expandidos, toggleExpand,
+        nombreFiltro, setNombreFiltro,
+        categoriaFiltro, setCategoriaFiltro,
+        filteredInventory
+    };
+}
+
+function useExcelImport(setInventory) {
+    const [importPreview, setImportPreview] = useState(null);
+    const [importError, setImportError] = useState(null);
+    const [importResult, setImportResult] = useState(null);
+    const [importando, setImportando] = useState(false);
+    const fileInputRef = useRef(null);
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -160,6 +104,20 @@ export default function Inventario() {
         }
     };
 
+    return {
+        importPreview, setImportPreview,
+        importError, setImportError,
+        importResult, setImportResult,
+        importando, fileInputRef,
+        handleFileChange, confirmarImport
+    };
+}
+
+function useExtensionComments(setInventory) {
+    const [modalExt, setModalExt] = useState(null); // { itemId, codigo }
+    const [modalComentario, setModalComentario] = useState("");
+    const [guardandoComentario, setGuardandoComentario] = useState(false);
+
     const handleGuardarComentario = async () => {
         if (!modalExt) return;
         setGuardandoComentario(true);
@@ -189,6 +147,33 @@ export default function Inventario() {
             setGuardandoComentario(false);
         }
     };
+
+    return {
+        modalExt, setModalExt,
+        modalComentario, setModalComentario,
+        guardandoComentario, handleGuardarComentario
+    };
+}
+
+// --- Main Component ---
+export default function Inventario() {
+    // 1. Base Data Logic
+    const {
+        inventory, setInventory, expandidos, toggleExpand,
+        nombreFiltro, setNombreFiltro, categoriaFiltro, setCategoriaFiltro, filteredInventory
+    } = useInventoryData();
+
+    // 2. Excel Import Logic
+    const {
+        importPreview, setImportPreview, importError, setImportError, importResult, setImportResult,
+        importando, fileInputRef, handleFileChange, confirmarImport
+    } = useExcelImport(setInventory);
+
+    // 3. Comments Logic
+    const {
+        modalExt, setModalExt, modalComentario, setModalComentario,
+        guardandoComentario, handleGuardarComentario
+    } = useExtensionComments(setInventory);
 
     return (
         <>
