@@ -100,7 +100,7 @@ const LoginForm = () => {
 						className="btn btn-primary w-full"
 					>
 						{loading && <span className="loading loading-spinner"></span>}
-						<span>{loading ? 'Iniciando sesión...' : 'Iniciar sesión'}</span>
+						<span>{loading ? 'Accediendo...' : 'Acceder'}</span>
 					</button>
 
 					<AnimatePresence>
