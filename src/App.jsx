@@ -11,6 +11,8 @@ import AgregarPrestamo from './components/prestamos/AgregarPrestamo'
 import AgregarItem from './components/inventario/AgregarItem'
 import NavBar from './components/NavBar'
 import AlertasDevoluciones from './components/AlertasDevoluciones'
+import Background from './components/shared/Background'
+
 
 function App() {
   return (
@@ -38,6 +40,7 @@ function App() {
 
         </BrowserRouter>
       </ProtectedRoute>
+      <Background />
     </AuthProvider>
   )
 }
