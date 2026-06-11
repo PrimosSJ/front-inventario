@@ -399,31 +399,40 @@ export default function Inventario() {
             )}
 
             <div className="mb-4 flex flex-wrap gap-2">
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre"
-                    className="input input-bordered w-full max-w-xs"
-                    value={nombreFiltro}
-                    onChange={(e) => setNombreFiltro(e.target.value)}
-                />
+                <label className="input input-sm input-bordered max-w-sm w-full items-center gap-2 flex flex-row">
+                    <svg className="h-[1em] opacity-50 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <g
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
+                            strokeWidth="2.5"
+                            fill="none"
+                            stroke="currentColor"
+                        >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </g>
+                    </svg>
+                    <input type="search" className="grow" required placeholder="Buscar por nombre" value={nombreFiltro} onChange={(e) => setNombreFiltro(e.target.value)} />
+                </label>
+
                 <SelectCategoria
                     value={categoriaFiltro}
                     onChange={(e) => setCategoriaFiltro(e.target.value)}
-                    className="select select-bordered w-full max-w-xs"
+                    className="select select-bordered select-sm w-full max-w-xs"
                 />
-            </div>
 
-            <div className="flex flex-wrap justify-end gap-2 mb-4">
-                <button className="btn btn-outline btn-sm" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
-                    ↓ Exportar Excel
-                </button>
-                <button className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()}>
-                    ↑ Importar Excel
-                </button>
-                <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
-                <Link to="/inventario/agregar" className="btn btn-primary btn-sm">
-                    + Agregar Item
-                </Link>
+                <div className="ml-auto right-0 flex gap-2">
+                    <button className="btn btn-outline btn-sm" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
+                        ↓ Exportar Excel
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()}>
+                        ↑ Importar Excel
+                    </button>
+                    <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
+                    <Link to="/inventario/agregar" className="btn btn-primary btn-sm">
+                        + Agregar Item
+                    </Link>
+                </div>
             </div>
 
             <ImportPreviewModal
