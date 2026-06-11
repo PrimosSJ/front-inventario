@@ -1,33 +1,14 @@
 import { useEffect, useState, Fragment, useRef } from "react";
 import io from "socket.io-client";
 import { Link } from "react-router-dom";
-import PropTypes from 'prop-types';
 
 import SelectCategoria from "./inventario/SelectCategoria";
 import url, { api } from "../utils";
 import { exportarExcel, parsearExcel } from "../services/excel.service";
 
+import CommentIcon from "./icons/comment"
+
 const socket = io(url);
-
-// --- Sub-Components ---
-const ComentarioIcon = ({ comentario, onClick }) => (
-    <div className="flex justify-start">
-        <div
-            className={`tooltip tooltip-left cursor-pointer ${comentario ? "text-warning" : "text-base-content/50 hover:text-info"}`}
-            data-tip={comentario || "Agregar comentario"}
-            onClick={onClick}
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-            </svg>
-        </div>
-    </div>
-);
-
-ComentarioIcon.propTypes = {
-    comentario: PropTypes.string,
-    onClick: PropTypes.func.isRequired,
-};
 
 // --- Custom Hooks for Logic Separation ---
 
@@ -444,14 +425,19 @@ export default function Inventario() {
                                                                                 )}
                                                                             </td>
                                                                             <td className="py-2 px-3">
-                                                                                <ComentarioIcon
-                                                                                    comentario={ext.comentario}
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        setModalExt({ itemId: item._id, codigo: ext.codigo });
-                                                                                        setModalComentario(ext.comentario || "");
-                                                                                    }}
-                                                                                />
+                                                                                <div className="flex justify-start">
+                                                                                    <div
+                                                                                        className={`tooltip tooltip-left cursor-pointer ${ext.comentario ? "text-warning" : "text-base-content/50 hover:text-info"}`}
+                                                                                        data-tip={ext.comentario || "Agregar comentario"}
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            setModalExt({ itemId: item._id, codigo: ext.codigo });
+                                                                                            setModalComentario(ext.comentario || "");
+                                                                                        }}
+                                                                                    >
+                                                                                        <CommentIcon />
+                                                                                    </div>
+                                                                                </div>
                                                                             </td>
                                                                         </tr>
                                                                     ))}
