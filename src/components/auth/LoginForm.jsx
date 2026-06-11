@@ -85,7 +85,7 @@ const LoginForm = () => {
 								<input
 									type={passwordVisible ? 'text' : 'password'}
 									required
-									placeholder="••••••••"
+									placeholder={passwordVisible ? "abcd1234" : "••••••••"}
 									className="w-full [*::-webkit-credentials-reveal]:hidden [*::-webkit-password-toggle-button]:hidden [*::-ms-reveal]:hidden"
 									autoComplete="current-password"
 									data-1p-ignore
@@ -98,7 +98,8 @@ const LoginForm = () => {
 								type="button"
 								onClick={() => setPasswordVisible((prev) => !prev)}
 								className="btn btn-neutral join-item rounded-l-none px-3"
-								aria-label={passwordVisible ? "Hide password" : "Show password"}
+								aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+								title={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
 							>
 								{passwordVisible ? (
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-5">
