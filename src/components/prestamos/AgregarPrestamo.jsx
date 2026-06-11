@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../../utils";
 import RutReader from "../RutReader";
-import { enviarConfirmacionPrestamo } from "../../services/emailService";
+import { enviarConfirmacionPrestamo } from "../../services/email.service";
 
 export default function AgregarPrestamo() {
     const { id } = useParams();
@@ -65,7 +65,7 @@ export default function AgregarPrestamo() {
         } else {
             api.get("/inventario")
                 .then((res) => setAllProducts(res.data || []))
-                .catch(() => {});
+                .catch(() => { });
         }
     }, [id]);
 
@@ -73,7 +73,7 @@ export default function AgregarPrestamo() {
         ? allProducts.filter((p) =>
             p.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (p.categoria || "").toLowerCase().includes(searchQuery.toLowerCase())
-          )
+        )
         : [];
 
     const handleSelectProduct = (p) => {

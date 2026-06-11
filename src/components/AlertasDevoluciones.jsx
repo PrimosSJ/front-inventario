@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { api } from "../utils";
-import { enviarRecordatorioDevolucion } from "../services/emailService";
+import { enviarRecordatorioDevolucion } from "../services/email.service";
 
 const INTERVALO_MS = 30 * 60 * 1000;
 
