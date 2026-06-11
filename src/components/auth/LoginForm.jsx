@@ -87,8 +87,9 @@ const LoginForm = () => {
 									type={passwordVisible ? 'text' : 'password'}
 									required
 									placeholder="••••••••"
-									className="w-full pr-2"
+									className="w-full [*::-webkit-credentials-reveal]:hidden [*::-webkit-password-toggle-button]:hidden [*::-ms-reveal]:hidden"
 									autoComplete="current-password"
+									data-1p-ignore
 									value={password}
 									onFocus={() => setError('')}
 									onChange={(e) => setPassword(e.target.value)}

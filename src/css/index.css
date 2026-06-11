@@ -11,6 +11,11 @@
     opacity: 1;
 }
 
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
 #root {
   display: flex;
   flex-direction: column;
