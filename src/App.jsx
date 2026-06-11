@@ -1,7 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
-import './App.css'
-
 import { AuthProvider } from './components/auth/authContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
@@ -18,27 +16,27 @@ function App() {
   return (
     <AuthProvider>
       <ProtectedRoute>
-      <AlertasDevoluciones />
-      <h1 className='text-3xl font-bold'>
-        Plataforma Optimizada de Trazabilidad y Organización
-      </h1>
-      <hr />
+        <AlertasDevoluciones />
+        <h1 className='text-3xl font-bold'>
+          Plataforma Optimizada de Trazabilidad y Organización
+        </h1>
+        <hr />
 
-      <BrowserRouter>
+        <BrowserRouter>
 
-        <NavBar />
+          <NavBar />
 
-        <Routes>
-          <Route path='/inventario' element={<Inventario />} />
-          <Route path='/inventario/agregar' element={<AgregarItem />} />
-          <Route path='/inventario/:id' element={<ItemView />} />
-          <Route path='/historial_rut' element={<GetAllByRut />} />
-          <Route path='/new_prestamo' element={<AgregarPrestamo />} />
-          <Route path='/new_prestamo/:id' element={<AgregarPrestamo />} />
-          <Route path='/' element={<Prestamos />} />
-        </Routes>
+          <Routes>
+            <Route path='/inventario' element={<Inventario />} />
+            <Route path='/inventario/agregar' element={<AgregarItem />} />
+            <Route path='/inventario/:id' element={<ItemView />} />
+            <Route path='/historial_rut' element={<GetAllByRut />} />
+            <Route path='/new_prestamo' element={<AgregarPrestamo />} />
+            <Route path='/new_prestamo/:id' element={<AgregarPrestamo />} />
+            <Route path='/' element={<Prestamos />} />
+          </Routes>
 
-      </BrowserRouter>
+        </BrowserRouter>
       </ProtectedRoute>
     </AuthProvider>
   )

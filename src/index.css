@@ -10,3 +10,50 @@
 .date-input-dark::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
 }
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh; 
+  min-height: 100dvh; 
+  scroll-behavior: smooth;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+:root {
+  --rounded-btn: 0.25rem; 
+  --rounded-box: 0.25rem; 
+}
+
+@layer components {
+  .btn {
+    @apply relative overflow-hidden;
+
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 
+                0 -1px 0 0 rgba(0, 0, 0, 0.1) inset;
+
+    &::before {
+      content: "";
+      @apply bg-gradient-to-b from-transparent from-25% to-black/10 absolute left-0 top-0 size-full;
+    }
+
+    &:active {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1) inset;
+    }
+  }
+}
