@@ -372,7 +372,7 @@ export default function Inventario() {
     } = useExtensionComments(setInventory);
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto p-4 space-y-2">
             <h1 className="text-3xl font-bold mb-6 text-center">Inventario</h1>
 
             {importError && (
@@ -451,7 +451,7 @@ export default function Inventario() {
                 onConfirm={handleGuardarComentario}
             />
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
                 <table className="table table-zebra w-full">
                     <thead>
                         <tr>
