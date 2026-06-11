@@ -27,9 +27,9 @@ const LoginForm = () => {
 			<div className="max-w-md w-full space-y-8">
 				<div className="text-center">
 					<h2 className="text-2xl font-extrabold tracking-tight">
-						Bienvenido de nuevo
+						Bienvenid@
 					</h2>
-					<p className="text-sm">
+					<p>
 						Accede a tu cuenta para gestionar el inventario de PrimosSJ.
 					</p>
 				</div>
