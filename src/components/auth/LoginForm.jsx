@@ -32,7 +32,7 @@ const LoginForm = () => {
 							Bienvenid@
 						</h2>
 						<p>
-							Accede a tu cuenta para gestionar el inventario de PrimosSJ.
+							Accede a tu cuenta para gestionar el POTO de PrimosSJ.
 						</p>
 					</div>
 
