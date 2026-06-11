@@ -57,3 +57,10 @@ input, button, textarea, select {
     }
   }
 }
+
+#background {
+  @starting-style {
+    opacity: 0;
+    translate: -10% 0;
+  }
+}
