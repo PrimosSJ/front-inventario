@@ -35,11 +35,6 @@ input, button, textarea, select {
   font: inherit;
 }
 
-:root {
-  --rounded-btn: 0.25rem; 
-  --rounded-box: 0.25rem; 
-}
-
 @layer components {
   .btn {
     @apply relative overflow-hidden;
