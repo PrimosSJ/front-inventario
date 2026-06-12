@@ -17,16 +17,19 @@ export default function Header() {
     const [showPrestamoModal, setShowPrestamoModal] = useState(false);
 
     return (
-        <header className="bg-gradient-to-l from-base-200 to-primary to-[200%] from-[50%] border-b border-b-[#fff2]">
-            <div className="container mx-auto px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-4">
+        <header className="bg-gradient-to-r overflow-hidden from-base-200 to-transparent from-[50%] border-b border-b-[#fff1]">
+            <div className="relative container mx-auto px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-4">
 
                 {/* Brand / Title Section */}
-                <div className="text-lg md:text-xl font-semibold text-center lg:text-left text-base-content">
-                    <span className="text-primary">P</span>lataforma{" "}
-                    <span className="text-primary">O</span>ptimizada de{" "}
-                    <span className="text-primary">T</span>razabilidad y{" "}
-                    <span className="text-primary">O</span>rganización
-                </div>
+                <a href="/" className="h-full group text-lg md:text-xl font-semibold text-center lg:text-left text-base-content">
+                    <img className='h-12 w-auto z-100 absolute bottom-0' src="/logo.png" alt="Logo de POTO" />
+                    <p className='absolute ml-20 pointer-events-none left-0 top-1/2 -translate-y-1/2 transition-all duration-200 -translate-x-2 group-hover:translate-x-0 opacity-0 group-hover:opacity-100'>
+                        <span className="text-primary">P</span>lataforma{" "}
+                        <span className="text-primary">O</span>ptimizada de{" "}
+                        <span className="text-primary">T</span>razabilidad y{" "}
+                        <span className="text-primary">O</span>rganización
+                    </p>
+                </a>
 
                 {/* Navigation & User Controls */}
                 <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
