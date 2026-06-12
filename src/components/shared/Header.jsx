@@ -17,11 +17,11 @@ export default function Header() {
     const [showPrestamoModal, setShowPrestamoModal] = useState(false);
 
     return (
-        <header className="bg-base-200 border-b border-b-[#fff2]">
+        <header className="bg-gradient-to-l from-base-200 to-primary to-[200%] from-[50%] border-b border-b-[#fff2]">
             <div className="container mx-auto px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-4">
 
                 {/* Brand / Title Section */}
-                <div className="text-xl md:text-2xl font-bold text-center lg:text-left text-base-content">
+                <div className="text-lg md:text-xl font-semibold text-center lg:text-left text-base-content">
                     <span className="text-primary">P</span>lataforma{" "}
                     <span className="text-primary">O</span>ptimizada de{" "}
                     <span className="text-primary">T</span>razabilidad y{" "}
