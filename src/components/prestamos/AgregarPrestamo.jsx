@@ -1,18 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import PropTypes from "prop-types";
 
 import { api } from "../../utils";
 import RutReader from "../RutReader";
 import { enviarConfirmacionPrestamo } from "../../services/email.service";
 
-export default function AgregarPrestamo() {
-    const { id } = useParams();
-    const navigate = useNavigate();
-
+export default function AgregarPrestamo({ onClose, initialProductId = null }) {
     const [producto, setProducto] = useState(null);
     const [extensionesDisponibles, setExtensionesDisponibles] = useState([]);
     const [error, setError] = useState(null);
     const [emailWarning, setEmailWarning] = useState(false);
+    const [successMsg, setSuccessMsg] = useState(null);
 
     const [allProducts, setAllProducts] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -60,14 +58,14 @@ export default function AgregarPrestamo() {
     };
 
     useEffect(() => {
-        if (id) {
-            cargarProducto(id);
+        if (initialProductId) {
+            cargarProducto(initialProductId);
         } else {
             api.get("/inventario")
                 .then((res) => setAllProducts(res.data || []))
                 .catch(() => { });
         }
-    }, [id]);
+    }, [initialProductId]);
 
     const filteredProducts = searchQuery.length >= 2
         ? allProducts.filter((p) =>
@@ -136,8 +134,8 @@ export default function AgregarPrestamo() {
 
         api
             .post("/prestamos", payload)
-            .then((res) => {
-                const prestamo = res.data;
+            .then(() => {
+                setSuccessMsg("Préstamo registrado exitosamente.");
                 enviarConfirmacionPrestamo({
                     email: form.email,
                     nombre: form.nombre,
@@ -149,8 +147,11 @@ export default function AgregarPrestamo() {
                     console.error("No se pudo enviar el email de confirmación:", err);
                     setEmailWarning(true);
                 });
-                void prestamo;
-                navigate("/");
+
+                // Close modal after a brief success message
+                setTimeout(() => {
+                    if (onClose) onClose();
+                }, 1200);
             })
             .catch((err) => {
                 setError(err.response?.data?.message || "Error al registrar el préstamo");
@@ -160,25 +161,34 @@ export default function AgregarPrestamo() {
     const esCategoria = producto?.tipo === "categoria";
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-5 border rounded shadow-md">
-            <h2 className="text-2xl font-bold mb-5">Agregar Préstamo</h2>
+        <div className="w-full flex flex-col gap-4">
+            <div>
+                <h2 className="text-2xl font-bold">Agregar Préstamo</h2>
+                <p className="text-sm text-base-content/70">Registra un nuevo préstamo en el sistema.</p>
+            </div>
 
             {error && (
-                <div className="alert alert-error mb-4">
+                <div className="alert alert-error py-2">
                     <span>{error}</span>
                 </div>
             )}
 
+            {successMsg && (
+                <div className="alert alert-success py-2">
+                    <span>{successMsg}</span>
+                </div>
+            )}
+
             {emailWarning && (
-                <div className="alert alert-warning mb-4">
+                <div className="alert alert-warning py-2">
                     <span>Préstamo creado, pero no se pudo enviar el email de confirmación.</span>
                     <button className="btn btn-xs btn-ghost ml-auto" onClick={() => setEmailWarning(false)}>✕</button>
                 </div>
             )}
 
-            {!id && (
-                <div className="mb-4 relative">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Buscar producto</label>
+            {!initialProductId && (
+                <div className="relative z-50">
+                    <label className="block text-sm font-bold mb-1">Buscar producto</label>
                     <input
                         type="text"
                         placeholder="Escribe el nombre del producto..."
@@ -194,7 +204,7 @@ export default function AgregarPrestamo() {
                         autoComplete="off"
                     />
                     {dropdownOpen && filteredProducts.length > 0 && (
-                        <ul className="absolute z-10 w-full bg-base-100 border border-base-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
+                        <ul className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
                             {filteredProducts.map((p) => (
                                 <li
                                     key={p._id}
@@ -202,13 +212,13 @@ export default function AgregarPrestamo() {
                                     onMouseDown={() => handleSelectProduct(p)}
                                 >
                                     <span className="font-semibold">{p.nombre}</span>
-                                    <span className="text-xs text-gray-400">{p.categoria}</span>
+                                    <span className="text-xs text-base-content/50">{p.categoria}</span>
                                 </li>
                             ))}
                         </ul>
                     )}
                     {dropdownOpen && searchQuery.length >= 2 && filteredProducts.length === 0 && (
-                        <div className="absolute z-10 w-full bg-base-100 border border-base-300 rounded-b shadow-lg px-4 py-2 text-sm text-gray-400">
+                        <div className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg px-4 py-2 text-sm text-base-content/50">
                             Sin resultados
                         </div>
                     )}
@@ -216,8 +226,8 @@ export default function AgregarPrestamo() {
             )}
 
             {producto && (
-                <div className="mb-4 p-3 bg-base-200 rounded">
-                    <p className="text-sm text-gray-600">Producto a prestar:</p>
+                <div className="p-3 bg-base-200 rounded border border-base-300">
+                    <p className="text-xs text-base-content/70">Producto a prestar:</p>
                     <p className="font-bold">{producto.nombre}</p>
                     <span className="badge badge-sm mt-1">
                         {producto.tipo === "categoria" ? "Categoría" : "Unitario"}
@@ -225,8 +235,7 @@ export default function AgregarPrestamo() {
                 </div>
             )}
 
-            {/* Tipo de préstamo — se decide al momento del préstamo */}
-            <div className="mb-4 flex items-center gap-3">
+            <div className="flex items-center gap-3">
                 <label className="text-sm font-bold">Préstamo Especial</label>
                 <input
                     type="checkbox"
@@ -242,104 +251,113 @@ export default function AgregarPrestamo() {
                 {esEspecial && <span className="badge badge-warning badge-sm">Especial</span>}
             </div>
 
-            <div className="mb-4">
+            <div className="grid gap-3">
                 <RutReader onRutChange={handleRutChange} />
-            </div>
 
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Nombre</label>
-                <input
-                    type="text"
-                    placeholder="Nombre"
-                    name="nombre"
-                    value={form.nombre}
-                    onChange={handleChange}
-                    className="input input-bordered w-full max-w-xs"
-                />
-            </div>
-
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                <input
-                    type="email"
-                    placeholder="correo@ejemplo.com"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="input input-bordered w-full max-w-xs"
-                />
-            </div>
-
-            {esEspecial && (
-                <>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">Teléfono</label>
-                        <input
-                            type="tel"
-                            placeholder="+56 9 ..."
-                            name="telefono"
-                            value={form.telefono}
-                            onChange={handleChange}
-                            className="input input-bordered w-full max-w-xs"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Fecha de devolución esperada
-                        </label>
-                        <input
-                            type="date"
-                            name="fecha_devolucion_esperada"
-                            value={form.fecha_devolucion_esperada}
-                            onChange={handleChange}
-                            className="input input-bordered w-full max-w-xs date-input-dark"
-                        />
-                    </div>
-                </>
-            )}
-
-            {esCategoria && (
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Extensión a prestar</label>
-                    <select
-                        name="extension_codigo"
-                        value={form.extension_codigo}
+                <div>
+                    <label className="block text-sm font-bold mb-1">Nombre</label>
+                    <input
+                        type="text"
+                        placeholder="Nombre"
+                        name="nombre"
+                        value={form.nombre}
                         onChange={handleChange}
-                        className="select select-bordered w-full max-w-xs"
-                    >
-                        <option value="">Selecciona una extensión disponible</option>
-                        {extensionesDisponibles.map((ext) => (
-                            <option key={ext.codigo} value={ext.codigo}>
-                                {ext.codigo}
-                            </option>
-                        ))}
-                    </select>
-                    {extensionesDisponibles.length === 0 && (
-                        <p className="text-xs text-error mt-1">
-                            No hay extensiones disponibles para este producto.
-                        </p>
-                    )}
+                        className="input input-bordered w-full"
+                    />
                 </div>
-            )}
 
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Comentario</label>
-                <textarea
-                    placeholder="Comentario"
-                    name="comentario"
-                    value={form.comentario}
-                    onChange={handleChange}
-                    className="textarea textarea-bordered w-full max-w-xs"
-                ></textarea>
+                <div>
+                    <label className="block text-sm font-bold mb-1">Email</label>
+                    <input
+                        type="email"
+                        placeholder="correo@ejemplo.com"
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        className="input input-bordered w-full"
+                    />
+                </div>
+
+                {esEspecial && (
+                    <div className="flex gap-2">
+                        <div className="flex-1">
+                            <label className="block text-sm font-bold mb-1">Teléfono</label>
+                            <input
+                                type="tel"
+                                placeholder="+56 9 ..."
+                                name="telefono"
+                                value={form.telefono}
+                                onChange={handleChange}
+                                className="input input-bordered w-full"
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-bold mb-1">Devolución esperada</label>
+                            <input
+                                type="date"
+                                name="fecha_devolucion_esperada"
+                                value={form.fecha_devolucion_esperada}
+                                onChange={handleChange}
+                                className="input input-bordered w-full date-input-dark"
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {esCategoria && (
+                    <div>
+                        <label className="block text-sm font-bold mb-1">Extensión a prestar</label>
+                        <select
+                            name="extension_codigo"
+                            value={form.extension_codigo}
+                            onChange={handleChange}
+                            className="select select-bordered w-full"
+                        >
+                            <option value="">Selecciona una extensión disponible</option>
+                            {extensionesDisponibles.map((ext) => (
+                                <option key={ext.codigo} value={ext.codigo}>
+                                    {ext.codigo}
+                                </option>
+                            ))}
+                        </select>
+                        {extensionesDisponibles.length === 0 && (
+                            <p className="text-xs text-error mt-1">
+                                No hay extensiones disponibles para este producto.
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                <div>
+                    <label className="block text-sm font-bold mb-1">Comentario</label>
+                    <textarea
+                        placeholder="Comentario opcional..."
+                        name="comentario"
+                        value={form.comentario}
+                        onChange={handleChange}
+                        className="textarea textarea-bordered w-full"
+                        rows={2}
+                    ></textarea>
+                </div>
             </div>
 
-            <button
-                onClick={handleAddPrestamo}
-                disabled={!producto}
-                className="btn btn-primary btn-xs sm:btn-md lg:btn-lg"
-            >
-                Agregar
-            </button>
+            <div className="modal-action mt-2">
+                <button type="button" onClick={onClose} className="btn btn-ghost">
+                    Cancelar
+                </button>
+                <button
+                    onClick={handleAddPrestamo}
+                    disabled={!producto}
+                    className="btn btn-primary"
+                >
+                    Agregar Préstamo
+                </button>
+            </div>
         </div>
     );
 }
+
+AgregarPrestamo.propTypes = {
+    onClose: PropTypes.func.isRequired,
+    initialProductId: PropTypes.string,
+};

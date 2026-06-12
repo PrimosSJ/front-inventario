@@ -7,7 +7,6 @@ import Inventario from './components/Inventario'
 import Prestamos from './components/Prestamos'
 import ItemView from './components/inventario/ItemView'
 import GetAllByRut from './components/prestamos/GetAllByRut'
-import AgregarPrestamo from './components/prestamos/AgregarPrestamo'
 import AlertasDevoluciones from './components/AlertasDevoluciones'
 import Header from './components/shared/Header'
 
@@ -23,8 +22,6 @@ function App() {
             <Route path='/inventario' element={<Inventario />} />
             <Route path='/inventario/:id' element={<ItemView />} />
             <Route path='/historial_rut' element={<GetAllByRut />} />
-            <Route path='/new_prestamo' element={<AgregarPrestamo />} />
-            <Route path='/new_prestamo/:id' element={<AgregarPrestamo />} />
             <Route path='/' element={<Prestamos />} />
           </Routes>
 

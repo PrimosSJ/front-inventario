@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
+import { useState } from 'react';
+
+import AgregarPrestamo from '../prestamos/AgregarPrestamo';
 
 import QRIcon from '../icons/qr.jsx';
 
@@ -10,6 +13,8 @@ import QRIcon from '../icons/qr.jsx';
  */
 export default function Header() {
     const { user, logout } = useAuth();
+
+    const [showPrestamoModal, setShowPrestamoModal] = useState(false);
 
     return (
         <header className="bg-base-200 border-b border-b-[#fff2]">
@@ -44,13 +49,13 @@ export default function Header() {
                         >
                             Historial
                         </Link>
-                        <Link
-                            to="/new_prestamo"
+                        <button
+                            onClick={() => setShowPrestamoModal(true)}
                             className="btn btn-primary btn-sm gap-2"
                         >
                             <QRIcon />
                             Prestar con QR
-                        </Link>
+                        </button>
                     </nav>
 
                     {/* User Profile & Logout */}
@@ -70,6 +75,14 @@ export default function Header() {
                     </div>
                 </div>
             </div>
+
+            {showPrestamoModal && (
+                <div className="modal modal-open">
+                    <div className="modal-box overflow-visible">
+                        <AgregarPrestamo onClose={() => setShowPrestamoModal(false)} />
+                    </div>
+                </div>
+            )}
         </header>
     );
 }
