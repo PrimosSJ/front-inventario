@@ -261,58 +261,67 @@ export default function LoansPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {sortedLoans.map((prestamo) => {
-                                const isSelected = selectedLoans.has(prestamo._id);
-                                const isFinalizado = prestamo.finalizado;
+                            <AnimatePresence mode="popLayout">
+                                {sortedLoans.map((prestamo) => {
+                                    const isSelected = selectedLoans.has(prestamo._id);
+                                    const isFinalizado = prestamo.finalizado;
 
-                                return (
-                                    <tr
-                                        key={prestamo._id}
-                                        className={`transition-colors duration-200 ${isSelected ? "bg-primary/5" : ""} ${!isFinalizado ? "hover:bg-base-200/50 cursor-pointer" : ""}`}
-                                        onClick={() => !isFinalizado && handleToggleSelection(prestamo._id)}
-                                    >
-                                        <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox checkbox-sm checkbox-primary"
-                                                    checked={isSelected}
-                                                    onChange={() => handleToggleSelection(prestamo._id)}
-                                                    disabled={isFinalizado}
-                                                />
-                                            </label>
-                                        </td>
-                                        <td className="whitespace-nowrap font-mono text-sm text-base-content/80">
-                                            {formatRut(prestamo.rut)}
-                                        </td>
-                                        <td className="line-clamp-2 max-w-[200px] font-medium">{prestamo.nombre}</td>
-                                        <td className="text-sm max-w-[200px] truncate" title={prestamo.email}>
-                                            {prestamo.email || <Empty />}
-                                        </td>
-                                        <td className="line-clamp-2 max-w-[200px]">{prestamo.nombre_producto}</td>
-                                        <td className="font-mono text-sm">
-                                            {prestamo.extension_codigo || <Empty />}
-                                        </td>
-                                        <td>{renderLoanTypeBadge(prestamo.tipo_prestamo)}</td>
-                                        <td className="whitespace-nowrap text-sm">{formatTimestamp(getPrestamoDate(prestamo))}</td>
-                                        <td className="whitespace-nowrap">{renderReturnStatus(prestamo)}</td>
-                                        <td>
-                                            {isFinalizado ? (
-                                                <span className="badge badge-success badge-outline badge-sm">Completado</span>
-                                            ) : (
-                                                <span className="badge badge-warning badge-outline badge-sm">Pendiente</span>
-                                            )}
-                                        </td>
-                                        <td className="text-center">
-                                            {prestamo.comentario && (
-                                                <div className="tooltip tooltip-left" data-tip={prestamo.comentario}>
-                                                    <InfoIcon />
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                                    return (
+                                        <motion.tr
+                                            key={prestamo._id}
+                                            layout
+
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                                            transition={{
+                                                layout: { type: "spring", stiffness: 300, damping: 30 }
+                                            }}
+                                            className={`transition-colors duration-200 ${isSelected ? "bg-primary/5" : ""} ${!isFinalizado ? "hover:bg-base-200/50 cursor-pointer" : ""}`}
+                                            onClick={() => !isFinalizado && handleToggleSelection(prestamo._id)}
+                                        >
+                                            <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="checkbox checkbox-sm checkbox-primary"
+                                                        checked={isSelected}
+                                                        onChange={() => handleToggleSelection(prestamo._id)}
+                                                        disabled={isFinalizado}
+                                                    />
+                                                </label>
+                                            </td>
+                                            <td className="whitespace-nowrap font-mono text-sm text-base-content/80">
+                                                {formatRut(prestamo.rut)}
+                                            </td>
+                                            <td className="line-clamp-2 max-w-[200px] font-medium">{prestamo.nombre}</td>
+                                            <td className="text-sm max-w-[200px] truncate" title={prestamo.email}>
+                                                {prestamo.email || <Empty />}
+                                            </td>
+                                            <td className="line-clamp-2 max-w-[200px]">{prestamo.nombre_producto}</td>
+                                            <td className="font-mono text-sm">
+                                                {prestamo.extension_codigo || <Empty />}
+                                            </td>
+                                            <td>{renderLoanTypeBadge(prestamo.tipo_prestamo)}</td>
+                                            <td className="whitespace-nowrap text-sm">{formatTimestamp(getPrestamoDate(prestamo))}</td>
+                                            <td className="whitespace-nowrap">{renderReturnStatus(prestamo)}</td>
+                                            <td>
+                                                {isFinalizado ? (
+                                                    <span className="badge badge-success badge-outline badge-sm">Completado</span>
+                                                ) : (
+                                                    <span className="badge badge-warning badge-outline badge-sm">Pendiente</span>
+                                                )}
+                                            </td>
+                                            <td className="text-center">
+                                                {prestamo.comentario && (
+                                                    <div className="tooltip tooltip-left" data-tip={prestamo.comentario}>
+                                                        <InfoIcon />
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </motion.tr>
+                                    );
+                                })}
+                            </AnimatePresence>
 
                             {sortedLoans.length === 0 && (
                                 <tr>
