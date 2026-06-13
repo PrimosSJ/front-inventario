@@ -56,6 +56,18 @@ input, button, textarea, select {
       box-shadow: 0 2px 4px rgba(0,0,0,0.1) inset;
     }
   }
+
+  .btn {
+    @apply h-9 min-h-9;
+  }
+
+  .input {
+    @apply h-9 min-h-9;
+  }
+
+  .select {
+    @apply h-9 min-h-9;
+  }
 }
 
 #background {

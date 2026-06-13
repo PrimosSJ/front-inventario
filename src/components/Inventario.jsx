@@ -403,7 +403,7 @@ export default function Inventario() {
             )}
 
             <div className="mb-4 flex flex-wrap gap-2">
-                <label className="input input-sm input-bordered max-w-sm w-full items-center gap-2 flex flex-row">
+                <label className="input input-bordered max-w-sm w-full items-center gap-2 flex flex-row">
                     <svg className="h-[1em] opacity-50 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <g
                             strokeLinejoin="round"
@@ -422,20 +422,20 @@ export default function Inventario() {
                 <SelectCategoria
                     value={categoriaFiltro}
                     onChange={(e) => setCategoriaFiltro(e.target.value)}
-                    className="select select-bordered select-sm w-full max-w-xs"
+                    className="select select-bordered w-full max-w-xs"
                 />
 
-                <div className="ml-auto right-0 flex gap-2">
-                    <button className="btn btn-outline btn-sm" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
+                <div className="ml-auto right-0 flex gap-2 [&_svg]:size-5">
+                    <button className="btn btn-outline" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
                         <DownloadIcon />
                         <span>Exportar Excel</span>
                     </button>
-                    <button className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()}>
+                    <button className="btn btn-outline" onClick={() => fileInputRef.current?.click()}>
                         <UploadIcon />
                         <span>Importar Excel</span>
                     </button>
                     <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
-                    <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+                    <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
                         <AddIcon />
                         <span>Agregar Item</span>
                     </button>
