@@ -31,8 +31,8 @@ export default function Prestamos() {
                         onChange={(e) => setBusqueda(e.target.value)}
                         className="input input-bordered w-full sm:max-w-md"
                     />
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-gray-700">Pendientes</span>
+                    <div className="flex items-center gap-4">
+                        <span className="text-sm font-semibold text-base-content">Pendientes</span>
                         <input
                             type="checkbox"
                             className="toggle toggle-primary"
