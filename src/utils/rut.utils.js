@@ -15,3 +15,25 @@ export function extractRutFromInput(input) {
 
     return input;
 }
+
+/**
+ * Formats a valid RUT from a raw input string.
+ * @param {string} input - The raw input text.
+ * @returns {string} Formatted RUT.
+ */
+export function formatRut(input) {
+    if (!input) return "-";
+
+    // 1. Limpiar todo lo que no sea número o letra K
+    const cleanRut = String(input).replace(/[^0-9kK]/g, '').toUpperCase();
+    if (cleanRut.length < 2) return cleanRut;
+
+    // 2. Separar el dígito verificador del cuerpo
+    const dv = cleanRut.slice(-1);
+    let body = cleanRut.slice(0, -1);
+
+    // 3. Agregar los puntos separadores de miles al cuerpo
+    body = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    return `${body}-${dv}`;
+}

@@ -7,3 +7,5 @@ export { default as KeyIcon } from './key';
 export { default as MailIcon } from './mail';
 export { default as QRIcon } from './qr';
 export { default as UploadIcon } from './upload';
+export { default as PublicIcon } from './public';
+export { default as StarIcon } from './star';
