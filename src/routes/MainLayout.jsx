@@ -1,6 +1,6 @@
 import { useLocation, useOutlet } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Header from '../components/shared/Header';
+import Header from '../components/layout/Header';
 
 /**
  * Handles smooth page transitions using Framer Motion.
