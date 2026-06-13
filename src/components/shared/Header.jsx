@@ -4,8 +4,7 @@ import { useState } from 'react';
 
 import AgregarPrestamo from '../prestamos/AgregarPrestamo';
 
-import QRIcon from '../icons/qr.jsx';
-
+import { QRIcon } from "../icons";
 
 /**
  * Unified application header containing the main brand title,

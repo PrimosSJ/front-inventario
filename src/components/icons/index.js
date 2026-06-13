@@ -1,0 +1,9 @@
+export { default as AddIcon } from './add';
+export { default as CommentIcon } from './comment';
+export { default as DownloadIcon } from './download';
+export { default as EyeOffIcon } from './eye-off';
+export { default as EyeIcon } from './eye';
+export { default as KeyIcon } from './key';
+export { default as MailIcon } from './mail';
+export { default as QRIcon } from './qr';
+export { default as UploadIcon } from './upload';

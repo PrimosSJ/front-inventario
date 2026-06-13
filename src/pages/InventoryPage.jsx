@@ -10,10 +10,8 @@ import { exportarExcel } from "../services/excel.service";
 // Components & Icons
 import SelectCategoria from "../components/inventario/SelectCategoria";
 import AgregarItem from "../components/inventario/AgregarItem";
-import DownloadIcon from "../components/icons/download";
-import UploadIcon from "../components/icons/upload";
-import CommentIcon from "../components/icons/comment";
-import AddIcon from "../components/icons/add";
+
+import { DownloadIcon, UploadIcon, CommentIcon, AddIcon } from "../components/icons";
 
 // ==========================================
 // PRESENTATIONAL SUB-COMPONENTS
