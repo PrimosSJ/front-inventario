@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import { useState } from 'react';
 
@@ -16,12 +16,15 @@ export default function Header() {
 
     const [showPrestamoModal, setShowPrestamoModal] = useState(false);
 
+    const linkClass = ({ isActive }) =>
+        `transition-all duration-200 ${isActive ? 'text-primary border-b-2 border-primary' : 'link-hover text-base-content/80'}`;
+
     return (
         <header className="bg-gradient-to-r overflow-hidden from-base-200 to-transparent from-[50%] border-b border-b-[#fff1]">
             <div className="relative container mx-auto px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-4">
 
                 {/* Brand / Title Section */}
-                <a href="/" className="h-full group text-lg md:text-xl font-semibold text-center lg:text-left text-base-content">
+                <a href="/" className="h-full group text-lg md:text-xl text-center lg:text-left text-base-content">
                     <img className='h-12 w-auto z-100 absolute bottom-0' src="/logo.png" alt="Logo de POTO" />
                     <p className='absolute ml-20 pointer-events-none left-0 top-1/2 -translate-y-1/2 transition-all duration-200 -translate-x-2 group-hover:translate-x-0 opacity-0 group-hover:opacity-100'>
                         <span className="text-primary">P</span>lataforma{" "}
@@ -34,24 +37,25 @@ export default function Header() {
                 {/* Navigation & User Controls */}
                 <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                     <nav className="flex flex-wrap items-center justify-center gap-8">
-                        <Link
+                        <NavLink
                             to="/inventario"
-                            className="link-hover"
+                            className={linkClass}
                         >
                             Inventario
-                        </Link>
-                        <Link
+                        </NavLink>
+                        <NavLink
                             to="/"
-                            className="link-hover"
+                            className={linkClass}
+                            end
                         >
                             Préstamos
-                        </Link>
-                        <Link
+                        </NavLink>
+                        <NavLink
                             to="/historial_rut"
-                            className="link-hover"
+                            className={linkClass}
                         >
                             Historial
-                        </Link>
+                        </NavLink>
                         <button
                             onClick={() => setShowPrestamoModal(true)}
                             className="btn btn-primary btn-sm gap-2"
