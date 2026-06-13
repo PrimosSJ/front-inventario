@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from './authContext';
+import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from "framer-motion";
 
 import KeyIcon from '../icons/key.jsx';

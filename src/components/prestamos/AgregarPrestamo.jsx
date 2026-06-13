@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { api } from "../../utils";
+import { getInventoryItemRequest, getAvailableExtensionsRequest, getInventoryRequest } from "../../api/inventory.api";
+import { createLoanRequest } from "../../api/loans.api";
+
 import RutReader from "../RutReader";
 import { enviarConfirmacionPrestamo } from "../../services/email.service";
 
@@ -31,8 +33,7 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
 
     const cargarProducto = (productoId) => {
         if (!productoId) return;
-        api
-            .get(`/inventario/${productoId}`)
+        getInventoryItemRequest(productoId)
             .then((res) => {
                 if (!res.data || !res.data._id) {
                     setError("Producto no encontrado");
@@ -43,8 +44,7 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
                 setError(null);
 
                 if (res.data.tipo === "categoria") {
-                    api
-                        .get(`/inventario/${productoId}/extensiones-disponibles`)
+                    getAvailableExtensionsRequest(productoId)
                         .then((r) => setExtensionesDisponibles(r.data || []))
                         .catch(() => setExtensionesDisponibles([]));
                 } else {
@@ -61,7 +61,7 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
         if (initialProductId) {
             cargarProducto(initialProductId);
         } else {
-            api.get("/inventario")
+            getInventoryRequest()
                 .then((res) => setAllProducts(res.data || []))
                 .catch(() => { });
         }
@@ -132,8 +132,7 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
             payload.extension_codigo = form.extension_codigo;
         }
 
-        api
-            .post("/prestamos", payload)
+        createLoanRequest(payload)
             .then(() => {
                 setSuccessMsg("Préstamo registrado exitosamente.");
                 enviarConfirmacionPrestamo({

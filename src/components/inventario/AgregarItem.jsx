@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import SelectCategoria from "./SelectCategoria";
-import { api } from "../../utils";
+import { createInventoryItemRequest } from "../../api/inventory.api";
 
 const RANGO_MAX = 50;
 
@@ -94,8 +94,7 @@ export default function AgregarItem({ onClose }) {
             payload.stock = newItem.stock;
         }
 
-        api
-            .post("/inventario", payload)
+        createInventoryItemRequest(payload)
             .then(() => {
                 setToast({ tipo: "success", mensaje: "Item agregado exitosamente" });
                 // Let the user see the success message briefly before closing the modal

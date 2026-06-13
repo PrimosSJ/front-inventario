@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { api } from "../../utils";
+import { getCategoriesRequest } from "../../api/inventory.api";
 
 export default function SelectCategoria({ value, onChange, name, className, permitirNuevo = false }) {
     const [categorias, setCategorias] = useState([]);
     const [nuevo, setNuevo] = useState(false);
 
     useEffect(() => {
-        api
-            .get("/inventario/categorias")
+        getCategoriesRequest()
             .then((res) => {
                 const categoriasCargadas = res.data;
                 setCategorias(res.data);

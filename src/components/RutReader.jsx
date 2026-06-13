@@ -1,31 +1,19 @@
 import { useState } from "react";
+import { extractRutFromInput } from "../utils/rut.utils";
 
 export default function RutReader({ onRutChange }) {
     const [rut, setRut] = useState("");
     const [inputText, setInputText] = useState("");
 
     function handleInputChange(e) {
-        const { value } = e.target
-        setInputText(value)
+        const { value } = e.target;
+        setInputText(value);
 
-        const extractedRut = extractRutFromInput(value)
+        const extractedRut = extractRutFromInput(value);
         if (extractedRut) {
-            setRut(extractedRut)
-            onRutChange(extractedRut)
+            setRut(extractedRut);
+            onRutChange(extractedRut);
         }
-    }
-
-    function extractRutFromInput(input) {
-        const runMatch = input.match(/RUN¿([\d']+)/)
-        if (runMatch && runMatch[1]){
-            return runMatch[1].replace("'", '').slice(0, 8)
-        }
-
-        if (input.length === 18 && !isNaN(input)) {
-            return input.slice(-8)
-        }
-    
-    return input
     }
 
     return (
@@ -39,5 +27,5 @@ export default function RutReader({ onRutChange }) {
                 onChange={handleInputChange}
             />
         </div>
-    )
+    );
 }

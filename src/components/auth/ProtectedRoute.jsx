@@ -1,4 +1,4 @@
-import { useAuth } from './authContext';
+import { useAuth } from '../../context/AuthContext';
 import LoginForm from './LoginForm';
 
 const ProtectedRoute = ({ children }) => {

@@ -1,150 +1,22 @@
-import { useEffect, useState, Fragment, useRef } from "react";
-import io from "socket.io-client";
+import { useState, Fragment } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
-import SelectCategoria from "./inventario/SelectCategoria";
-import url, { api } from "../utils";
-import { exportarExcel, parsearExcel } from "../services/excel.service";
-import AgregarItem from "./inventario/AgregarItem";
+// Hooks & Services
+import { useInventoryData, useExtensionComments } from "../hooks/useInventory";
+import { useExcelImport } from "../hooks/useExcelImport";
+import { exportarExcel } from "../services/excel.service";
 
-import DownloadIcon from "./icons/download"
-import UploadIcon from "./icons/upload"
+// Components & Icons
+import SelectCategoria from "./inventario/SelectCategoria";
+import AgregarItem from "./inventario/AgregarItem";
+import DownloadIcon from "./icons/download";
+import UploadIcon from "./icons/upload";
 import CommentIcon from "./icons/comment";
 import AddIcon from "./icons/add";
 
-const socket = io(url);
-
 // ==========================================
-// CUSTOM HOOKS
-// ==========================================
-
-function useInventoryData() {
-    const [inventory, setInventory] = useState([]);
-    const [expandidos, setExpandidos] = useState({});
-    const [nombreFiltro, setNombreFiltro] = useState("");
-    const [categoriaFiltro, setCategoriaFiltro] = useState("");
-
-    useEffect(() => {
-        api.get("/inventario")
-            .then((res) => setInventory(res.data))
-            .catch((err) => console.log(err));
-
-        socket.on("inventoryUpdate", (data) => setInventory(data));
-        return () => socket.off("inventoryUpdate");
-    }, []);
-
-    const toggleExpand = (id) => {
-        setExpandidos((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const filteredInventory = (inventory || []).filter((item) => {
-        const nombreMatch = item.nombre.toLowerCase().includes(nombreFiltro.toLowerCase());
-        const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
-        return nombreMatch && categoriaMatch;
-    });
-
-    return {
-        inventory, setInventory,
-        expandidos, toggleExpand,
-        nombreFiltro, setNombreFiltro,
-        categoriaFiltro, setCategoriaFiltro,
-        filteredInventory
-    };
-}
-
-function useExcelImport(setInventory) {
-    const [importPreview, setImportPreview] = useState(null);
-    const [importError, setImportError] = useState(null);
-    const [importResult, setImportResult] = useState(null);
-    const [importando, setImportando] = useState(false);
-    const fileInputRef = useRef(null);
-
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setImportError(null);
-        setImportResult(null);
-        try {
-            const items = await parsearExcel(file);
-            setImportPreview(items);
-        } catch (err) {
-            setImportError(String(err));
-            setImportPreview(null);
-        }
-        e.target.value = "";
-    };
-
-    const confirmarImport = async () => {
-        if (!importPreview) return;
-        setImportando(true);
-        try {
-            const res = await api.post("/inventario/bulk", { items: importPreview });
-            setImportResult(res.data);
-            setImportPreview(null);
-            const inv = await api.get("/inventario");
-            setInventory(inv.data);
-        } catch (err) {
-            setImportError(err.response?.data?.message || "Error al importar");
-            setImportPreview(null);
-        } finally {
-            setImportando(false);
-        }
-    };
-
-    return {
-        importPreview, setImportPreview,
-        importError, setImportError,
-        importResult, setImportResult,
-        importando, fileInputRef,
-        handleFileChange, confirmarImport
-    };
-}
-
-function useExtensionComments(setInventory) {
-    const [modalExt, setModalExt] = useState(null); // { itemId, codigo }
-    const [modalComentario, setModalComentario] = useState("");
-    const [guardandoComentario, setGuardandoComentario] = useState(false);
-
-    const handleGuardarComentario = async () => {
-        if (!modalExt) return;
-        setGuardandoComentario(true);
-        try {
-            await api.patch(
-                `/inventario/${modalExt.itemId}/extensiones/${modalExt.codigo}/comentario`,
-                { comentario: modalComentario }
-            );
-            setInventory((prev) =>
-                prev.map((item) => {
-                    if (item._id !== modalExt.itemId) return item;
-                    return {
-                        ...item,
-                        extensiones: item.extensiones.map((ext) =>
-                            ext.codigo === modalExt.codigo
-                                ? { ...ext, comentario: modalComentario }
-                                : ext
-                        ),
-                    };
-                })
-            );
-            setModalExt(null);
-            setModalComentario("");
-        } catch (err) {
-            console.error("Error al guardar comentario:", err);
-        } finally {
-            setGuardandoComentario(false);
-        }
-    };
-
-    return {
-        modalExt, setModalExt,
-        modalComentario, setModalComentario,
-        guardandoComentario, handleGuardarComentario
-    };
-}
-
-// ==========================================
-// SUB-COMPONENTES DE PRESENTACIÓN
+// PRESENTATIONAL SUB-COMPONENTS
 // ==========================================
 
 const ImportPreviewModal = ({ importPreview, importando, onCancel, onConfirm }) => {
@@ -354,7 +226,7 @@ InventoryRow.propTypes = {
 };
 
 // ==========================================
-// COMPONENTE PRINCIPAL
+// MAIN COMPONENT
 // ==========================================
 
 export default function Inventario() {
@@ -405,13 +277,7 @@ export default function Inventario() {
             <div className="mb-4 flex flex-wrap gap-2">
                 <label className="input input-bordered max-w-sm w-full items-center gap-2 flex flex-row">
                     <svg className="h-[1em] opacity-50 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <g
-                            strokeLinejoin="round"
-                            strokeLinecap="round"
-                            strokeWidth="2.5"
-                            fill="none"
-                            stroke="currentColor"
-                        >
+                        <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.3-4.3"></path>
                         </g>

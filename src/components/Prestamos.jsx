@@ -1,26 +1,8 @@
-import { useEffect, useState } from "react";
-import io from "socket.io-client";
+import { useLoansData } from "../hooks/useLoans";
+import { formatTimestamp, getPrestamoDate } from "../utils/date.utils";
 
-import url, { api } from "../utils";
 import MarcarDevuelto from "./prestamos/DevolverPrestamo";
 import TiempoRestante from "./prestamos/TiempoRestante";
-
-const socket = io(url);
-
-function formatTimestamp(timestamp) {
-    if (!timestamp) return "-";
-    const d = new Date(timestamp);
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yy = String(d.getFullYear()).slice(-2);
-    const hh = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-    return `${dd}/${mm}/${yy} ${hh}:${min}`;
-}
-
-function getPrestamoDate(prestamo) {
-    return prestamo.createdAt || prestamo.timestamp;
-}
 
 function renderTipoPrestamoBadge(tipo) {
     if (tipo === "especial") {
@@ -30,41 +12,11 @@ function renderTipoPrestamoBadge(tipo) {
 }
 
 export default function Prestamos() {
-    const [prestamos, setPrestamos] = useState([]);
-    const [soloPendientes, setSoloPendientes] = useState(true);
-    const [busqueda, setBusqueda] = useState("");
-
-    useEffect(() => {
-        api
-            .get("/prestamos")
-            .then((res) => setPrestamos(res.data))
-            .catch((err) => console.log(err));
-
-        socket.on("prestamosUpdate", (data) => {
-            setPrestamos((prev) => {
-                if (data && data._id && prev.some((p) => p._id === data._id)) {
-                    return prev.map((p) => (p._id === data._id ? { ...p, ...data } : p));
-                }
-                return [data, ...prev];
-            });
-        });
-
-        return () => socket.off("prestamosUpdate");
-    }, []);
-
-    const busquedaLower = busqueda.trim().toLowerCase();
-
-    const prestamosFiltrados = prestamos
-        .filter((p) => (soloPendientes ? !p.finalizado : true))
-        .filter((p) => {
-            if (!busquedaLower) return true;
-            return (
-                (p.nombre || "").toLowerCase().includes(busquedaLower) ||
-                (p.rut || "").toLowerCase().includes(busquedaLower) ||
-                (p.nombre_producto || "").toLowerCase().includes(busquedaLower) ||
-                (p.email || "").toLowerCase().includes(busquedaLower)
-            );
-        });
+    const {
+        soloPendientes, setSoloPendientes,
+        busqueda, setBusqueda,
+        prestamosFiltrados, setPrestamos
+    } = useLoansData();
 
     return (
         <div className="container mx-auto p-4">

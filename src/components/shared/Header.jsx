@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 
 import AgregarPrestamo from '../prestamos/AgregarPrestamo';

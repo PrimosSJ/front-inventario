@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { api } from '../../utils';
+import { deleteInventoryItemRequest } from '../../api/inventory.api';
 
 export default function EliminarItem({ id }) {
     const navigate = useNavigate();
     const [confirmando, setConfirmando] = useState(false);
 
     const handleDeleteItem = () => {
-        api
-            .delete(`/inventario/${id}`)
+        deleteInventoryItemRequest(id)
             .then(() => {
                 navigate("/inventario");
             })

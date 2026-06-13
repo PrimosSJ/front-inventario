@@ -1,25 +1,12 @@
 import { useEffect, useState } from "react";
-import io from "socket.io-client";
 
-import url, { api } from "../../utils";
 import MarcarDevuelto from "./DevolverPrestamo";
 import RutReader from "../RutReader";
 import TiempoRestante from "./TiempoRestante";
 
-function formatTimestamp(timestamp) {
-    if (!timestamp) return "-";
-    const d = new Date(timestamp);
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yy = String(d.getFullYear()).slice(-2);
-    const hh = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-    return `${dd}/${mm}/${yy} ${hh}:${min}`;
-}
-
-function getPrestamoDate(prestamo) {
-    return prestamo.createdAt || prestamo.timestamp;
-}
+import { getLoansByRutRequest } from "../../api/loans.api";
+import { useSocket } from "../../context/SocketContext";
+import { formatTimestamp, getPrestamoDate } from "../../utils/date.utils";
 
 function renderTipoPrestamoBadge(tipo) {
     if (tipo === "especial") {
@@ -28,17 +15,16 @@ function renderTipoPrestamoBadge(tipo) {
     return <span className="badge badge-ghost">Público</span>;
 }
 
-const socket = io(url);
-
 export default function PrestamosPorRut() {
+    const socket = useSocket();
+
     const [lista, setLista] = useState([]);
     const [rut, setRut] = useState("");
 
     const handleClick = (e) => {
         e.preventDefault();
         if (!rut) return;
-        api
-            .get(`/prestamos/history/${rut}`)
+        getLoansByRutRequest(rut)
             .then((res) => {
                 setLista(res.data);
             })
@@ -48,9 +34,9 @@ export default function PrestamosPorRut() {
     };
 
     useEffect(() => {
-        if (!rut) return;
-        api
-            .get(`/prestamos/history/${rut}`)
+        if (!rut || !socket) return;
+
+        getLoansByRutRequest(rut)
             .then((res) => {
                 setLista(res.data);
             })
@@ -72,7 +58,7 @@ export default function PrestamosPorRut() {
         return () => {
             socket.off("prestamosUpdate");
         };
-    }, [rut]);
+    }, [rut, socket]);
 
     return (
         <>

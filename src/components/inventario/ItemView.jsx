@@ -5,7 +5,7 @@ import EliminarItem from './EliminarItem';
 import QRgenerator from './QRgenerator';
 import SelectCategoria from './SelectCategoria';
 
-import { api } from '../../utils';
+import { getInventoryItemRequest, updateInventoryItemRequest } from "../../api/inventory.api";
 
 const RANGO_MAX = 50;
 
@@ -32,8 +32,7 @@ export default function ItemView() {
     const [preview, setPreview] = useState([]);
 
     useEffect(() => {
-        api
-            .get(`/inventario/${id}`)
+        getInventoryItemRequest(id)
             .then((res) => {
                 setItem({
                     ...res.data,
@@ -138,8 +137,7 @@ export default function ItemView() {
             payload.stock = item.stock;
         }
 
-        api
-            .put(`/inventario/${id}`, payload)
+        updateInventoryItemRequest(id, payload)
             .then(() => {
                 navigate('/inventario');
             })

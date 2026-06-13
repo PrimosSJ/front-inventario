@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { api } from "../utils";
+import { getSpecialPendingLoansRequest } from "../api/loans.api";
 import { enviarRecordatorioDevolucion } from "../services/email.service";
 
 const INTERVALO_MS = 30 * 60 * 1000;
@@ -20,7 +20,7 @@ function marcarEnviado(prestamoId) {
 async function verificarYEnviar() {
     let prestamos;
     try {
-        const res = await api.get("/prestamos/pendientes-especiales");
+        const res = await getSpecialPendingLoansRequest();
         prestamos = res.data;
     } catch {
         return;
