@@ -77,7 +77,8 @@ export default function PrestamosPorRut() {
     return (
         <>
             <div className="container mx-auto p-4">
-                <h1 className="text-3xl font-bold mb-6 text-center">Historial de Préstamos por Rut</h1>
+                <h1 className="text-2xl font-bold mb-4">Historial de Préstamos por Rut</h1>
+
                 <div className="flex items-end justify-center mb-4 gap-4">
                     <RutReader onRutChange={setRut} />
                     <button
@@ -117,12 +118,12 @@ export default function PrestamosPorRut() {
                                     <td>{formatTimestamp(getPrestamoDate(prestamo))}</td>
                                     <td>
                                         {prestamo.tipo_prestamo === "especial" &&
-                                        prestamo.fecha_devolucion_esperada &&
-                                        !prestamo.finalizado ? (
+                                            prestamo.fecha_devolucion_esperada &&
+                                            !prestamo.finalizado ? (
                                             <TiempoRestante fechaIso={prestamo.fecha_devolucion_esperada} />
                                         ) : prestamo.tipo_prestamo === "especial" &&
-                                          prestamo.fecha_devolucion_esperada &&
-                                          prestamo.finalizado ? (
+                                            prestamo.fecha_devolucion_esperada &&
+                                            prestamo.finalizado ? (
                                             <span className="text-sm text-gray-400">
                                                 Devuelto {formatTimestamp(prestamo.updatedAt)}
                                             </span>

@@ -68,7 +68,7 @@ export default function Prestamos() {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6 text-center">Préstamos</h1>
+            <h1 className="text-2xl font-bold mb-4">Préstamos</h1>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <input
@@ -121,12 +121,12 @@ export default function Prestamos() {
                                     <td>{formatTimestamp(getPrestamoDate(prestamo))}</td>
                                     <td>
                                         {prestamo.tipo_prestamo === "especial" &&
-                                        prestamo.fecha_devolucion_esperada &&
-                                        !prestamo.finalizado ? (
+                                            prestamo.fecha_devolucion_esperada &&
+                                            !prestamo.finalizado ? (
                                             <TiempoRestante fechaIso={prestamo.fecha_devolucion_esperada} />
                                         ) : prestamo.tipo_prestamo === "especial" &&
-                                          prestamo.fecha_devolucion_esperada &&
-                                          prestamo.finalizado ? (
+                                            prestamo.fecha_devolucion_esperada &&
+                                            prestamo.finalizado ? (
                                             <span className="text-sm text-gray-400">
                                                 Devuelto {formatTimestamp(prestamo.updatedAt)}
                                             </span>

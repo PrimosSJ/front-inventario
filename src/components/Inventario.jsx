@@ -377,7 +377,7 @@ export default function Inventario() {
 
     return (
         <div className="container mx-auto p-4 space-y-2">
-            <h1 className="text-3xl font-bold mb-6 text-center">Inventario</h1>
+            <h1 className="text-2xl font-bold mb-4">Inventario</h1>
 
             {importError && (
                 <div className="alert alert-error mb-4">

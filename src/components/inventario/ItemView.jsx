@@ -156,7 +156,7 @@ export default function ItemView() {
 
     return (
         <div className="max-w-md mx-auto mt-10 p-5 border rounded shadow-md">
-            <h2 className="text-2xl font-bold mb-5">Editar Item</h2>
+            <h2 className="text-2xl font-bold mb-4">Editar Item</h2>
 
             {error && (
                 <div className="alert alert-error mb-4">
