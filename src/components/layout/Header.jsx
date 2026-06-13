@@ -19,7 +19,7 @@ export default function Header() {
         `transition-all duration-200 ${isActive ? 'text-primary border-b-2 border-primary' : 'link-hover text-base-content/80'}`;
 
     return (
-        <header className="bg-gradient-to-r overflow-hidden from-base-200 to-transparent from-[50%] border-b border-b-[#fff1]">
+        <header className="bg-gradient-to-r sticky top-0 z-[1000] overflow-hidden from-base-200 to-base-100 from-[50%] border-b border-b-[#fff1]">
             <div className="relative container mx-auto px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-4">
 
                 {/* Brand / Title Section */}
