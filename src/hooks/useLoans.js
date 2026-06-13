@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import { useSocket } from "../context/SocketContext";
-import { getLoansRequest } from "../api/loans.api";
+import { getLoansRequest as defaultGetLoansRequest } from "../api/loans.api";
 
 /**
  * Hook to manage fetching, real-time updates, and filtering of loans.
+ * @param {Object} apiDeps - Injectable API dependencies for testing/mocking.
  */
-export function useLoansData() {
+export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
     const socket = useSocket();
     const [prestamos, setPrestamos] = useState([]);
     const [soloPendientes, setSoloPendientes] = useState(true);
     const [busqueda, setBusqueda] = useState("");
 
     useEffect(() => {
-        getLoansRequest()
+        getLoans()
             .then((res) => setPrestamos(res.data))
             .catch((err) => console.error("Failed to load loans:", err));
 
@@ -32,7 +33,7 @@ export function useLoansData() {
         return () => {
             socket.off("prestamosUpdate", handleUpdate);
         };
-    }, [socket]);
+    }, [socket, getLoans]);
 
     const busquedaLower = busqueda.trim().toLowerCase();
 

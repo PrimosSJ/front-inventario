@@ -1,11 +1,16 @@
 import { useState, useRef } from "react";
 import { parsearExcel } from "../services/excel.service";
-import { bulkImportInventoryRequest, getInventoryRequest } from "../api/inventory.api";
+import {
+    bulkImportInventoryRequest as defaultBulkImport,
+    getInventoryRequest as defaultGetInventory
+} from "../api/inventory.api";
 
 /**
  * Hook to handle the flow of parsing and bulk-importing Excel data.
+ * @param {Function} setInventory - The state setter to refresh inventory.
+ * @param {Object} apiDeps - Injectable API dependencies.
  */
-export function useExcelImport(setInventory) {
+export function useExcelImport(setInventory, { bulkImport = defaultBulkImport, getInventory = defaultGetInventory } = {}) {
     const [importPreview, setImportPreview] = useState(null);
     const [importError, setImportError] = useState(null);
     const [importResult, setImportResult] = useState(null);
@@ -31,12 +36,11 @@ export function useExcelImport(setInventory) {
         if (!importPreview) return;
         setImportando(true);
         try {
-            const res = await bulkImportInventoryRequest(importPreview);
+            const res = await bulkImport(importPreview);
             setImportResult(res.data);
             setImportPreview(null);
 
-            // Refresh inventory strictly upon success
-            const inv = await getInventoryRequest();
+            const inv = await getInventory();
             setInventory(inv.data);
         } catch (err) {
             setImportError(err.response?.data?.message || "Error al importar el archivo.");

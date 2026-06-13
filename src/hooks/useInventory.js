@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSocket } from "../context/SocketContext";
-import { getInventoryRequest, updateExtensionCommentRequest } from "../api/inventory.api";
+import {
+    getInventoryRequest as defaultGetInventoryRequest,
+    updateExtensionCommentRequest as defaultUpdateCommentRequest
+} from "../api/inventory.api";
 
 /**
  * Hook to manage inventory state, filtering, and real-time updates.
+ * @param {Object} apiDeps - Injectable API dependencies.
  */
-export function useInventoryData() {
+export function useInventoryData({ getInventory = defaultGetInventoryRequest } = {}) {
     const socket = useSocket();
     const [inventory, setInventory] = useState([]);
     const [expandidos, setExpandidos] = useState({});
@@ -13,7 +17,7 @@ export function useInventoryData() {
     const [categoriaFiltro, setCategoriaFiltro] = useState("");
 
     useEffect(() => {
-        getInventoryRequest()
+        getInventory()
             .then((res) => setInventory(res.data))
             .catch((err) => console.error("Failed to load inventory:", err));
 
@@ -25,7 +29,7 @@ export function useInventoryData() {
         return () => {
             socket.off("inventoryUpdate", handleUpdate);
         };
-    }, [socket]);
+    }, [socket, getInventory]);
 
     const toggleExpand = (id) => {
         setExpandidos((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -48,9 +52,11 @@ export function useInventoryData() {
 
 /**
  * Hook to manage modal state and API requests for extension comments.
+ * @param {Function} setInventory - The state setter from useInventoryData.
+ * @param {Object} apiDeps - Injectable API dependencies.
  */
-export function useExtensionComments(setInventory) {
-    const [modalExt, setModalExt] = useState(null); // { itemId, codigo }
+export function useExtensionComments(setInventory, { updateComment = defaultUpdateCommentRequest } = {}) {
+    const [modalExt, setModalExt] = useState(null);
     const [modalComentario, setModalComentario] = useState("");
     const [guardandoComentario, setGuardandoComentario] = useState(false);
 
@@ -58,7 +64,7 @@ export function useExtensionComments(setInventory) {
         if (!modalExt) return;
         setGuardandoComentario(true);
         try {
-            await updateExtensionCommentRequest(modalExt.itemId, modalExt.codigo, modalComentario);
+            await updateComment(modalExt.itemId, modalExt.codigo, modalComentario);
             setInventory((prev) =>
                 prev.map((item) => {
                     if (item._id !== modalExt.itemId) return item;
