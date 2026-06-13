@@ -1,20 +1,19 @@
 import axios from "axios";
+import { ENV } from "../config/env.config";
 
-const url = /*"https://poto-back.inf.santiago.usm.cl"*/ "http://localhost:4000";
-export default url;
-
-/** @const {boolean} ignoreAuthBackend - Check if backend and auth is being ignored */
-export const ignoreAuthBackend = false;
+export const ignoreAuthBackend = ENV.IGNORE_AUTH;
+export default ENV.API_URL;
 
 export const api = axios.create({
-    baseURL: url,
+    baseURL: ENV.API_URL,
     headers: { "Content-Type": "application/json" },
 });
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
-    if (token)
+    if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
 });
 
@@ -26,7 +25,7 @@ api.interceptors.response.use(
                 localStorage.removeItem("token");
                 window.location.reload();
             } else {
-                console.warn("Mock Mode: Suppressed 401 Unauthorized window reload.");
+                console.warn("[Mock Mode] Suppressed 401 Unauthorized reload.");
             }
         }
         return Promise.reject(error);
