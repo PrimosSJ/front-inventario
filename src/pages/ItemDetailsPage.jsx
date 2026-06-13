@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import EliminarItem from './EliminarItem';
-import QRgenerator from './QRgenerator';
-import SelectCategoria from './SelectCategoria';
+import EliminarItem from '../components/inventario/EliminarItem';
+import QRgenerator from '../components/inventario/QRgenerator';
+import SelectCategoria from '../components/inventario/SelectCategoria';
 
-import { getInventoryItemRequest, updateInventoryItemRequest } from "../../api/inventory.api";
+import { getInventoryItemRequest, updateInventoryItemRequest } from "../api/inventory.api";
 
 const RANGO_MAX = 50;
 

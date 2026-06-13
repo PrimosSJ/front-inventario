@@ -8,12 +8,12 @@ import { useExcelImport } from "../hooks/useExcelImport";
 import { exportarExcel } from "../services/excel.service";
 
 // Components & Icons
-import SelectCategoria from "./inventario/SelectCategoria";
-import AgregarItem from "./inventario/AgregarItem";
-import DownloadIcon from "./icons/download";
-import UploadIcon from "./icons/upload";
-import CommentIcon from "./icons/comment";
-import AddIcon from "./icons/add";
+import SelectCategoria from "../components/inventario/SelectCategoria";
+import AgregarItem from "../components/inventario/AgregarItem";
+import DownloadIcon from "../components/icons/download";
+import UploadIcon from "../components/icons/upload";
+import CommentIcon from "../components/icons/comment";
+import AddIcon from "../components/icons/add";
 
 // ==========================================
 // PRESENTATIONAL SUB-COMPONENTS

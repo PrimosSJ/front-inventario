@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { getSpecialPendingLoansRequest } from "../api/loans.api";
-import { enviarRecordatorioDevolucion } from "../services/email.service";
+import { getSpecialPendingLoansRequest } from "../../api/loans.api";
+import { enviarRecordatorioDevolucion } from "../../services/email.service";
 
 const INTERVALO_MS = 30 * 60 * 1000;
 

@@ -1,8 +1,8 @@
 import { useLoansData } from "../hooks/useLoans";
 import { formatTimestamp, getPrestamoDate } from "../utils/date.utils";
 
-import MarcarDevuelto from "./prestamos/DevolverPrestamo";
-import TiempoRestante from "./prestamos/TiempoRestante";
+import MarcarDevuelto from "../components/prestamos/DevolverPrestamo";
+import TiempoRestante from "../components/prestamos/TiempoRestante";
 
 function renderTipoPrestamoBadge(tipo) {
     if (tipo === "especial") {

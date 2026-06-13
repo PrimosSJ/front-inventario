@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
-import MarcarDevuelto from "./DevolverPrestamo";
-import RutReader from "../RutReader";
-import TiempoRestante from "./TiempoRestante";
+import MarcarDevuelto from "../components/prestamos/DevolverPrestamo";
+import RutReader from "../components/shared/RutReader";
+import TiempoRestante from "../components/prestamos/TiempoRestante";
 
-import { getLoansByRutRequest } from "../../api/loans.api";
-import { useSocket } from "../../context/SocketContext";
-import { formatTimestamp, getPrestamoDate } from "../../utils/date.utils";
+import { getLoansByRutRequest } from "../api/loans.api";
+import { useSocket } from "../context/SocketContext";
+import { formatTimestamp, getPrestamoDate } from "../utils/date.utils";
 
 function renderTipoPrestamoBadge(tipo) {
     if (tipo === "especial") {

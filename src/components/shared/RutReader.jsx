@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { extractRutFromInput } from "../utils/rut.utils";
+import { extractRutFromInput } from "../../utils/rut.utils";
 
 export default function RutReader({ onRutChange }) {
     const [rut, setRut] = useState("");

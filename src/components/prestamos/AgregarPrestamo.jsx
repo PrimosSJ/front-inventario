@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { getInventoryItemRequest, getAvailableExtensionsRequest, getInventoryRequest } from "../../api/inventory.api";
 import { createLoanRequest } from "../../api/loans.api";
 
-import RutReader from "../RutReader";
+import RutReader from "../shared/RutReader";
 import { enviarConfirmacionPrestamo } from "../../services/email.service";
 
 export default function AgregarPrestamo({ onClose, initialProductId = null }) {
