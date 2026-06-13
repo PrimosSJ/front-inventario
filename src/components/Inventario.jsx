@@ -6,8 +6,12 @@ import PropTypes from "prop-types";
 import SelectCategoria from "./inventario/SelectCategoria";
 import url, { api } from "../utils";
 import { exportarExcel, parsearExcel } from "../services/excel.service";
-import CommentIcon from "./icons/comment";
 import AgregarItem from "./inventario/AgregarItem";
+
+import DownloadIcon from "./icons/download"
+import UploadIcon from "./icons/upload"
+import CommentIcon from "./icons/comment";
+import AddIcon from "./icons/add";
 
 const socket = io(url);
 
@@ -423,14 +427,17 @@ export default function Inventario() {
 
                 <div className="ml-auto right-0 flex gap-2">
                     <button className="btn btn-outline btn-sm" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
-                        ↓ Exportar Excel
+                        <DownloadIcon />
+                        <span>Exportar Excel</span>
                     </button>
                     <button className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()}>
-                        ↑ Importar Excel
+                        <UploadIcon />
+                        <span>Importar Excel</span>
                     </button>
                     <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
                     <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
-                        + Agregar Item
+                        <AddIcon />
+                        <span>Agregar Item</span>
                     </button>
                 </div>
             </div>
