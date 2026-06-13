@@ -272,39 +272,72 @@ export default function Inventario() {
                 </div>
             )}
 
-            <div className="mb-4 flex flex-wrap gap-2">
-                <label className="input input-bordered max-w-sm w-full items-center gap-2 flex flex-row">
-                    <svg className="h-[1em] opacity-50 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </g>
-                    </svg>
-                    <input type="search" className="grow" required placeholder="Buscar por nombre" value={nombreFiltro} onChange={(e) => setNombreFiltro(e.target.value)} />
-                </label>
+            <div className="flex flex-col gap-4 p-4 rounded-lg bg-base-300 h-full">
+                <div className="flex flex-wrap gap-2">
+                    <label className="input input-bordered max-w-sm w-full items-center gap-2 flex flex-row">
+                        <svg className="h-[1em] opacity-50 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </g>
+                        </svg>
+                        <input type="search" className="grow" required placeholder="Buscar por nombre" value={nombreFiltro} onChange={(e) => setNombreFiltro(e.target.value)} />
+                    </label>
 
-                <SelectCategoria
-                    value={categoriaFiltro}
-                    onChange={(e) => setCategoriaFiltro(e.target.value)}
-                    className="select select-bordered w-full max-w-xs"
-                />
+                    <SelectCategoria
+                        value={categoriaFiltro}
+                        onChange={(e) => setCategoriaFiltro(e.target.value)}
+                        className="select select-bordered w-full max-w-xs"
+                    />
 
-                <div className="ml-auto right-0 flex gap-2 [&_svg]:size-5">
-                    <button className="btn btn-outline" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
-                        <DownloadIcon />
-                        <span>Exportar Excel</span>
-                    </button>
-                    <button className="btn btn-outline" onClick={() => fileInputRef.current?.click()}>
-                        <UploadIcon />
-                        <span>Importar Excel</span>
-                    </button>
-                    <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
-                    <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-                        <AddIcon />
-                        <span>Agregar Item</span>
-                    </button>
+                    <div className="ml-auto right-0 flex gap-2 [&_svg]:size-5">
+                        <button className="btn btn-outline" onClick={() => exportarExcel(inventory)} disabled={inventory.length === 0}>
+                            <DownloadIcon />
+                            <span>Exportar Excel</span>
+                        </button>
+                        <button className="btn btn-outline" onClick={() => fileInputRef.current?.click()}>
+                            <UploadIcon />
+                            <span>Importar Excel</span>
+                        </button>
+                        <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
+                        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+                            <AddIcon />
+                            <span>Agregar Item</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 min-h-full">
+                    <table className="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th className="text-left w-8"></th>
+                                <th className="text-left">Nombre</th>
+                                <th className="text-left">Descripción</th>
+                                <th className="text-left">Categoría</th>
+                                <th className="text-left">Tipo</th>
+                                <th className="text-center">Disponible</th>
+                                <th className="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredInventory.map((item) => (
+                                <InventoryRow
+                                    key={item._id}
+                                    item={item}
+                                    expandido={!!expandidos[item._id]}
+                                    onToggleExpand={toggleExpand}
+                                    onOpenCommentModal={(itemId, codigo, comentarioActual) => {
+                                        setModalExt({ itemId, codigo });
+                                        setModalComentario(comentarioActual || "");
+                                    }}
+                                />
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
 
             {showAddModal && (
                 <div className="modal modal-open">
@@ -329,36 +362,6 @@ export default function Inventario() {
                 onCancel={() => { setModalExt(null); setModalComentario(""); }}
                 onConfirm={handleGuardarComentario}
             />
-
-            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-                <table className="table table-zebra w-full">
-                    <thead>
-                        <tr>
-                            <th className="text-left w-8"></th>
-                            <th className="text-left">Nombre</th>
-                            <th className="text-left">Descripción</th>
-                            <th className="text-left">Categoría</th>
-                            <th className="text-left">Tipo</th>
-                            <th className="text-center">Disponible</th>
-                            <th className="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredInventory.map((item) => (
-                            <InventoryRow
-                                key={item._id}
-                                item={item}
-                                expandido={!!expandidos[item._id]}
-                                onToggleExpand={toggleExpand}
-                                onOpenCommentModal={(itemId, codigo, comentarioActual) => {
-                                    setModalExt({ itemId, codigo });
-                                    setModalComentario(comentarioActual || "");
-                                }}
-                            />
-                        ))}
-                    </tbody>
-                </table>
-            </div>
         </div>
     );
 }
