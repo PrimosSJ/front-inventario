@@ -157,7 +157,6 @@ export default function Prestamos() {
                                     <td>{renderLoanTypeBadge(prestamo.tipo_prestamo)}</td>
                                     <td>{formatTimestamp(getPrestamoDate(prestamo))}</td>
 
-                                    {/* Extracted complex logic into a clean function call */}
                                     <td>{renderReturnStatus(prestamo)}</td>
 
                                     <td>
