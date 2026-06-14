@@ -7,7 +7,7 @@ import { extractRutFromInput } from "../../utils/rut.utils";
  * * @param {Object} props - Component props.
  * @param {Function} props.onRutChange - Callback function triggered when a valid RUT is parsed.
  */
-export default function RutReader({ onRutChange }) {
+export default function RutReader({ onRutChange, className: _className }) {
     const [inputText, setInputText] = useState("");
 
     /**
@@ -30,12 +30,12 @@ export default function RutReader({ onRutChange }) {
     }
 
     return (
-        <label className="form-control w-full max-w-xs">
+        <label className={`form-control w-full ${_className}`}>
             <div className="label pb-1">
                 <span className="label-text">RUT</span>
             </div>
 
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="input input-bordered flex items-center w-full gap-2">
                 <svg
                     className="h-4 w-4 opacity-70"
                     xmlns="http://www.w3.org/2000/svg"
@@ -51,7 +51,7 @@ export default function RutReader({ onRutChange }) {
                 </svg>
                 <input
                     type="text"
-                    className="grow"
+                    className="grow w-full"
                     placeholder="12.345.678-9"
                     value={inputText}
                     onChange={handleInputChange}

@@ -66,7 +66,7 @@ export default function PrestamosPorRut() {
                 <h1 className="text-2xl font-bold mb-4">Historial de Préstamos por Rut</h1>
 
                 <div className="flex items-end gap-4">
-                    <RutReader onRutChange={setRut} />
+                    <RutReader onRutChange={setRut} className="max-w-sm" />
                     <button
                         onClick={handleClick}
                         className="btn btn-primary"

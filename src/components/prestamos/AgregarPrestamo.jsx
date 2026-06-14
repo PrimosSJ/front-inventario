@@ -251,7 +251,7 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
             </div>
 
             <div className="grid gap-3">
-                <RutReader onRutChange={handleRutChange} />
+                <RutReader onRutChange={handleRutChange} className="w-full!" />
 
                 <div>
                     <label className="block text-sm font-bold mb-1">Nombre</label>

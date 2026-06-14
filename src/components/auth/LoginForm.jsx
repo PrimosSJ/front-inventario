@@ -41,10 +41,10 @@ const LoginForm = () => {
 						</p>
 					</div>
 
-					<form className="space-y-4 *:space-y-1" onSubmit={handleSubmit}>
+					<form className="space-y-2!" onSubmit={handleSubmit}>
 						<fieldset className="fieldset">
 							<legend className="fieldset-legend">Correo eléctronico</legend>
-							<label className="input input-bordered flex items-center gap-2 validator">
+							<label className="input input-bordered flex items-center gap-2 w-full validator">
 								<MailIcon className="h-[1em] text-base-content/50" />
 								<input
 									type="email"
@@ -61,7 +61,7 @@ const LoginForm = () => {
 						</fieldset>
 						<fieldset className="fieldset">
 							<legend className="fieldset-legend">Contraseña</legend>
-							<div className="join input input-bordered p-0 items-center w-full flex">
+							<div className="join input input-bordered overflow-hidden rounded p-0 items-center w-full flex">
 								<label className="flex px-4 items-center gap-2 join-item flex-1 rounded-r-none">
 									<KeyIcon className="h-[1em] text-base-content/50" />
 									<input
