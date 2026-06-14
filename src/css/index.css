@@ -98,6 +98,10 @@ input, button, textarea, select {
   @apply rounded;
 }
 
+.badge {
+  @apply rounded shadow-sm/50;
+}
+
 #background {
   @starting-style {
     opacity: 0;
