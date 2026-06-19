@@ -9,6 +9,7 @@ import { returnLoanRequest } from "../api/loans.api";
 import { StarIcon, PublicIcon, SortIcon, ArrowDownIcon, FilterIcon } from "../components/icons";
 import ReturnStatus from "../components/prestamos/ReturnStatus";
 import SearchBar from "../components/ui/SearchBar";
+import DataPageLayout from "../components/layout/DataPageLayout";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
 import { EmptyRow } from "../components/ui/Table/utils";
 
@@ -308,12 +309,10 @@ export default function LoansPage() {
     }, [isAllSelected, selectedLoans])
 
     return (
-        <div className="container mx-auto p-4 flex flex-col h-[calc(100vh-70px)] overflow-hidden gap-4 relative">
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold">Préstamos</h1>
-
-                {/* Search and Filters */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <DataPageLayout
+            title="Préstamos"
+            headerActions={
+                <>
                     <SearchBar
                         placeholder="Buscar por nombre, RUT, producto..."
                         value={busqueda}
@@ -322,9 +321,9 @@ export default function LoansPage() {
                     />
                     <SortDropdown sortConfig={sortConfig} onSortChange={handleSort} />
                     <FilterDropdown filters={filters} onFilterChange={handleFilterChange} />
-                </div>
-            </header>
-
+                </>
+            }
+        >
             {/* Contextual Action Bar */}
             <AnimatePresence>
                 {selectedLoans.size > 0 && (
@@ -366,141 +365,139 @@ export default function LoansPage() {
             </AnimatePresence>
 
             {/* Main Data Table */}
-            <div className="bg-base-100 border border-base-content/20 rounded-box overflow-hidden flex flex-col flex-1 mb-8">
-                <Table wrapperClassName="flex-1 grow min-h-0" zebra>
-                    <TableHeader className="bg-base-200 select-none">
+            <Table wrapperClassName="flex-1 grow min-h-0" zebra>
+                <TableHeader className="bg-base-200 select-none">
+                    <TableRow>
+                        <TableHead pin className="w-8 text-center">
+                            <Tooltip content="Seleccionar todo">
+                                <label>
+                                    <input
+                                        ref={selectAllRef}
+                                        type="checkbox"
+                                        className="checkbox checkbox-sm"
+                                        checked={isAllSelected}
+                                        onChange={handleToggleAll}
+                                        disabled={returnableLoans.length === 0}
+                                    />
+                                </label>
+                            </Tooltip>
+                        </TableHead>
+                        <TableHead pin>Rut</TableHead>
+                        <TableHead pin>Nombre</TableHead>
+                        <TableHead pin>Email</TableHead>
+                        <TableHead pin>Producto</TableHead>
+                        <TableHead pin>Extensión</TableHead>
+                        <TableHead pin className="text-center">Tipo</TableHead>
+                        <TableHead pin>Fecha</TableHead>
+                        <TableHead pin>Estado</TableHead>
+                        <TableHead pin className="w-8"></TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <AnimatePresence mode="popLayout">
+                        {prestamosFiltrados.map((prestamo) => {
+                            const isSelected = selectedLoans.has(prestamo._id);
+                            const isFinalizado = prestamo.finalizado;
+
+                            const { category: grupoProducto, name: nombreProducto } = parseProductString(prestamo.nombre_producto);
+
+                            return (
+                                <TableRow
+                                    key={prestamo._id}
+                                    as={motion.tr}
+                                    layout
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                                    transition={{
+                                        layout: { type: "spring", stiffness: 300, damping: 30 }
+                                    }}
+                                    selected={isSelected}
+                                    interactive={!isFinalizado}
+                                    onTap={() => !isFinalizado && handleToggleSelection(prestamo._id)}
+                                >
+                                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                                        <Tooltip content="Seleccionar">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    className="checkbox checkbox-sm"
+                                                    checked={isSelected}
+                                                    disabled={isFinalizado}
+                                                />
+                                            </label>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap font-mono tracking-tight text-base-content/60">
+                                        {formatRut(prestamo.rut)}
+                                    </TableCell>
+                                    <TableCell className="font-medium min-w-60">
+                                        <div className="line-clamp-2 capitalize">
+                                            {prestamo.nombre}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="max-w-80">
+                                        {(
+                                            <a onClick={ev => { ev.stopPropagation(); }} className="font-mono truncate max-w-full w-fit block underline-offset-2 link link-hover text-primary saturate-40 brightness-125" href={`mailto:${prestamo.email}`}>
+                                                {prestamo.email}
+                                            </a>
+                                        ) || <EmptyRow />}
+                                    </TableCell>
+                                    <TableCell className="min-w-40 max-w-60 **:decoration-base-content/60">
+                                        <div className="line-clamp-2">
+                                            <Tooltip content={grupoProducto}>
+                                                <span className={grupoProducto.length ? "underline decoration-dotted hover:decoration-solid" : ""}>{nombreProducto}</span>
+                                            </Tooltip>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-mono min-w-20 whitespace-nowrap tracking-wider">
+                                        {prestamo.extension_codigo ? (
+                                            <span>
+                                                {prestamo.extension_codigo
+                                                    .replace(
+                                                        prestamo.nombre_producto
+                                                            .replace(/\(.*?\)/g, "").trim()
+                                                            .replace(/^.*\s+-\s+/g, "")
+                                                        , "")
+                                                }
+                                            </span>
+                                        ) : <EmptyRow />}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {renderLoanTypeBadge(prestamo.tipo_prestamo)}
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap font-mono tracking-tighter **:decoration-base-content/60">
+                                        <Tooltip content={new Date(getPrestamoDate(prestamo)).toLocaleString("es-CL", { hour12: false })}>
+                                            <span className="underline decoration-dotted hover:decoration-solid cursor-help">
+                                                {formatTimestamp(getPrestamoDate(prestamo))}
+                                            </span>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
+                                        <ReturnStatus prestamo={prestamo} />
+                                    </TableCell>
+                                    <TableCell className="text-center overflow-hidden">
+                                        {prestamo.comentario?.replace(/^sin observaciones$/gi, "")?.trim() && (
+                                            <Tooltip content={prestamo.comentario}>
+                                                <span className="px-2 cursor-help shadow-sm/50 font-black tracking-wide bg-linear-to-b from-white to-white/60 text-black text-shadow-md outline rounded outline-white justify-center text-center items-center h-full flex">
+                                                    ···
+                                                </span>
+                                            </Tooltip>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </AnimatePresence>
+
+                    {prestamosFiltrados.length === 0 && (
                         <TableRow>
-                            <TableHead pin className="w-8 text-center">
-                                <Tooltip content="Seleccionar todo">
-                                    <label>
-                                        <input
-                                            ref={selectAllRef}
-                                            type="checkbox"
-                                            className="checkbox checkbox-sm"
-                                            checked={isAllSelected}
-                                            onChange={handleToggleAll}
-                                            disabled={returnableLoans.length === 0}
-                                        />
-                                    </label>
-                                </Tooltip>
-                            </TableHead>
-                            <TableHead pin>Rut</TableHead>
-                            <TableHead pin>Nombre</TableHead>
-                            <TableHead pin>Email</TableHead>
-                            <TableHead pin>Producto</TableHead>
-                            <TableHead pin>Extensión</TableHead>
-                            <TableHead pin className="text-center">Tipo</TableHead>
-                            <TableHead pin>Fecha</TableHead>
-                            <TableHead pin>Estado</TableHead>
-                            <TableHead pin className="w-8"></TableHead>
+                            <TableCell colSpan="10" className="text-center py-12 text-base-content/50">
+                                No se encontraron préstamos que coincidan con la búsqueda.
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <AnimatePresence mode="popLayout">
-                            {prestamosFiltrados.map((prestamo) => {
-                                const isSelected = selectedLoans.has(prestamo._id);
-                                const isFinalizado = prestamo.finalizado;
-
-                                const { category: grupoProducto, name: nombreProducto } = parseProductString(prestamo.nombre_producto);
-
-                                return (
-                                    <TableRow
-                                        key={prestamo._id}
-                                        as={motion.tr}
-                                        layout
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                                        transition={{
-                                            layout: { type: "spring", stiffness: 300, damping: 30 }
-                                        }}
-                                        selected={isSelected}
-                                        interactive={!isFinalizado}
-                                        onTap={() => !isFinalizado && handleToggleSelection(prestamo._id)}
-                                    >
-                                        <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                                            <Tooltip content="Seleccionar">
-                                                <label>
-                                                    <input
-                                                        type="checkbox"
-                                                        className="checkbox checkbox-sm"
-                                                        checked={isSelected}
-                                                        disabled={isFinalizado}
-                                                    />
-                                                </label>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell className="whitespace-nowrap font-mono tracking-tight text-base-content/60">
-                                            {formatRut(prestamo.rut)}
-                                        </TableCell>
-                                        <TableCell className="font-medium min-w-60">
-                                            <div className="line-clamp-2 capitalize">
-                                                {prestamo.nombre}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="max-w-80">
-                                            {(
-                                                <a onClick={ev => { ev.stopPropagation(); }} className="font-mono truncate max-w-full w-fit block underline-offset-2 link link-hover text-primary saturate-40 brightness-125" href={`mailto:${prestamo.email}`}>
-                                                    {prestamo.email}
-                                                </a>
-                                            ) || <EmptyRow />}
-                                        </TableCell>
-                                        <TableCell className="min-w-40 max-w-60 **:decoration-base-content/60">
-                                            <div className="line-clamp-2">
-                                                <Tooltip content={grupoProducto}>
-                                                    <span className={grupoProducto.length ? "underline decoration-dotted hover:decoration-solid" : ""}>{nombreProducto}</span>
-                                                </Tooltip>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="font-mono min-w-20 whitespace-nowrap tracking-wider">
-                                            {prestamo.extension_codigo ? (
-                                                <span>
-                                                    {prestamo.extension_codigo
-                                                        .replace(
-                                                            prestamo.nombre_producto
-                                                                .replace(/\(.*?\)/g, "").trim()
-                                                                .replace(/^.*\s+-\s+/g, "")
-                                                            , "")
-                                                    }
-                                                </span>
-                                            ) : <EmptyRow />}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            {renderLoanTypeBadge(prestamo.tipo_prestamo)}
-                                        </TableCell>
-                                        <TableCell className="whitespace-nowrap font-mono tracking-tighter **:decoration-base-content/60">
-                                            <Tooltip content={new Date(getPrestamoDate(prestamo)).toLocaleString("es-CL", { hour12: false })}>
-                                                <span className="underline decoration-dotted hover:decoration-solid cursor-help">
-                                                    {formatTimestamp(getPrestamoDate(prestamo))}
-                                                </span>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell className="whitespace-nowrap">
-                                            <ReturnStatus prestamo={prestamo} />
-                                        </TableCell>
-                                        <TableCell className="text-center overflow-hidden">
-                                            {prestamo.comentario?.replace(/^sin observaciones$/gi, "")?.trim() && (
-                                                <Tooltip content={prestamo.comentario}>
-                                                    <span className="px-2 cursor-help shadow-sm/50 font-black tracking-wide bg-linear-to-b from-white to-white/60 text-black text-shadow-md outline rounded outline-white justify-center text-center items-center h-full flex">
-                                                        ···
-                                                    </span>
-                                                </Tooltip>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </AnimatePresence>
-
-                        {prestamosFiltrados.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan="10" className="text-center py-12 text-base-content/50">
-                                    No se encontraron préstamos que coincidan con la búsqueda.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-        </div>
+                    )}
+                </TableBody>
+            </Table>
+        </DataPageLayout>
     );
 }
