@@ -8,6 +8,8 @@ import RutReader from "../shared/RutReader";
 import { enviarConfirmacionPrestamo } from "../../services/email.service";
 
 export default function AgregarPrestamo({ onClose, initialProductId = null }) {
+    const [isLoadingProduct, setIsLoadingProduct] = useState(!!initialProductId);
+
     const [producto, setProducto] = useState(null);
     const [extensionesDisponibles, setExtensionesDisponibles] = useState([]);
     const [error, setError] = useState(null);
@@ -33,6 +35,8 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
 
     const cargarProducto = (productoId) => {
         if (!productoId) return;
+        setIsLoadingProduct(true);
+
         getInventoryItemRequest(productoId)
             .then((res) => {
                 if (!res.data || !res.data._id) {
@@ -54,6 +58,9 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
             .catch(() => {
                 setError("No se pudo cargar el producto");
                 setProducto(null);
+            })
+            .finally(() => {
+                setIsLoadingProduct(false);
             });
     };
 
@@ -185,54 +192,62 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
                 </div>
             )}
 
-            {!initialProductId && (
-                <div className="relative z-50">
-                    <label className="block text-sm font-bold mb-1">Buscar producto</label>
-                    <input
-                        type="text"
-                        placeholder="Escribe el nombre del producto..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                            setSearchQuery(e.target.value);
-                            setDropdownOpen(e.target.value.length >= 2);
-                            if (e.target.value.length < 2) setProducto(null);
-                        }}
-                        onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
-                        onFocus={() => searchQuery.length >= 2 && setDropdownOpen(true)}
-                        className="input input-bordered w-full"
-                        autoComplete="off"
-                        autoFocus
-                    />
-                    {dropdownOpen && filteredProducts.length > 0 && (
-                        <ul className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
-                            {filteredProducts.map((p) => (
-                                <li
-                                    key={p._id}
-                                    className="px-4 py-2 cursor-pointer hover:bg-base-200 flex justify-between items-center"
-                                    onMouseDown={() => handleSelectProduct(p)}
-                                >
-                                    <span className="font-semibold">{p.nombre}</span>
-                                    <span className="text-xs text-base-content/50">{p.categoria}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    {dropdownOpen && searchQuery.length >= 2 && filteredProducts.length === 0 && (
-                        <div className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg px-4 py-2 text-sm text-base-content/50">
-                            Sin resultados
+            {isLoadingProduct ? (
+                <div className="w-full flex justify-center py-6">
+                    <span className="loading loading-spinner loading-md text-primary"></span>
+                </div>
+            ) : (
+                <>
+                    {!initialProductId && (
+                        <div className="relative z-50">
+                            <label className="block text-sm font-bold mb-1">Buscar producto</label>
+                            <input
+                                type="text"
+                                placeholder="Escribe el nombre del producto..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setDropdownOpen(e.target.value.length >= 2);
+                                    if (e.target.value.length < 2) setProducto(null);
+                                }}
+                                onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+                                onFocus={() => searchQuery.length >= 2 && setDropdownOpen(true)}
+                                className="input input-bordered w-full"
+                                autoComplete="off"
+                                autoFocus
+                            />
+                            {dropdownOpen && filteredProducts.length > 0 && (
+                                <ul className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
+                                    {filteredProducts.map((p) => (
+                                        <li
+                                            key={p._id}
+                                            className="px-4 py-2 cursor-pointer hover:bg-base-200 flex justify-between items-center"
+                                            onMouseDown={() => handleSelectProduct(p)}
+                                        >
+                                            <span className="font-semibold">{p.nombre}</span>
+                                            <span className="text-xs text-base-content/50">{p.categoria}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {dropdownOpen && searchQuery.length >= 2 && filteredProducts.length === 0 && (
+                                <div className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg px-4 py-2 text-sm text-base-content/50">
+                                    Sin resultados
+                                </div>
+                            )}
                         </div>
                     )}
-                </div>
-            )}
 
-            {producto && (
-                <div className="p-3 bg-base-200 rounded border border-base-300">
-                    <p className="text-xs text-base-content/70">Producto a prestar:</p>
-                    <p className="font-bold">{producto.nombre}</p>
-                    <span className="badge badge-sm mt-1">
-                        {producto.tipo === "categoria" ? "Categoría" : "Unitario"}
-                    </span>
-                </div>
+                    {producto && (
+                        <div className="p-3 bg-base-200 rounded border border-base-300">
+                            <p className="text-xs text-base-content/70">Producto a prestar:</p>
+                            <p className="font-bold">{producto.nombre}</p>
+                            <span className="badge badge-sm mt-1">
+                                {producto.tipo === "categoria" ? "Categoría" : "Unitario"}
+                            </span>
+                        </div>
+                    )}
+                </>
             )}
 
             <div className="flex items-center gap-3">
