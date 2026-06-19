@@ -201,6 +201,7 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
                         onFocus={() => searchQuery.length >= 2 && setDropdownOpen(true)}
                         className="input input-bordered w-full"
                         autoComplete="off"
+                        autoFocus
                     />
                     {dropdownOpen && filteredProducts.length > 0 && (
                         <ul className="absolute w-full bg-base-100 border border-base-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
