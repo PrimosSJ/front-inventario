@@ -55,7 +55,10 @@ export default function PrestamosPorRut() {
             title="Historial de Préstamos"
             headerActions={
                 <div className="flex items-end gap-3">
-                    <RutReader onRutChange={setRut} className="w-full sm:w-64" />
+                    <div className="w-full flex flex-row flex-1 gap-4 items-center">
+                        <span className="text-base-content/60">RUT</span>
+                        <RutReader onRutChange={setRut} className="w-full sm:w-64" />
+                    </div>
                     <button onClick={handleClick} className="btn btn-primary h-9 min-h-9">
                         Buscar
                     </button>

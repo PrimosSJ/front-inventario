@@ -31,10 +31,6 @@ export default function RutReader({ onRutChange, className: _className }) {
 
     return (
         <label className={`form-control w-full ${_className}`}>
-            <div className="label pb-1">
-                <span className="label-text">RUT</span>
-            </div>
-
             <label className="input input-bordered flex items-center w-full gap-2">
                 <svg
                     className="h-4 w-4 opacity-70"
