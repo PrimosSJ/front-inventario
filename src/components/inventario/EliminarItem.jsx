@@ -1,54 +1,69 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import { deleteInventoryItemRequest } from '../../api/inventory.api';
 
-export default function EliminarItem({ id }) {
+/**
+ * Component to handle item deletion with a confirmation state.
+ */
+export default function EliminarItem({ id, onSuccess }) {
     const navigate = useNavigate();
     const [confirmando, setConfirmando] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleDeleteItem = () => {
+        setLoading(true);
         deleteInventoryItemRequest(id)
             .then(() => {
-                navigate("/inventario");
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    navigate("/inventario");
+                }
             })
             .catch((err) => {
-                console.log(err);
+                console.error(err);
                 setConfirmando(false);
+                setLoading(false);
             });
     };
 
     if (!confirmando) {
         return (
-            <div className="max-w-md mx-auto mt-10 p-5 border rounded shadow-md">
-                <button
-                    onClick={() => setConfirmando(true)}
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Eliminar
-                </button>
-            </div>
+            <button
+                type="button"
+                onClick={() => setConfirmando(true)}
+                className="btn btn-error btn-outline"
+            >
+                Eliminar Item
+            </button>
         );
     }
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-5 border rounded shadow-md bg-red-50">
-            <p className="mb-3 font-semibold text-red-700">
-                ¿Confirma la eliminación de este item? Esta acción no se puede deshacer.
-            </p>
-            <div className="flex gap-2">
-                <button
-                    onClick={handleDeleteItem}
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                >
-                    Sí, eliminar
-                </button>
-                <button
-                    onClick={() => setConfirmando(false)}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                >
-                    Cancelar
-                </button>
-            </div>
+        <div className="flex items-center gap-2 bg-error/10 p-2 rounded border border-error/30">
+            <span className="text-xs font-semibold text-error">¿Eliminar definitivamente?</span>
+            <button
+                type="button"
+                onClick={handleDeleteItem}
+                disabled={loading}
+                className="btn btn-error btn-sm"
+            >
+                {loading ? "..." : "Sí"}
+            </button>
+            <button
+                type="button"
+                onClick={() => setConfirmando(false)}
+                disabled={loading}
+                className="btn btn-ghost btn-sm"
+            >
+                No
+            </button>
         </div>
     );
 }
+
+EliminarItem.propTypes = {
+    id: PropTypes.string.isRequired,
+    onSuccess: PropTypes.func
+};

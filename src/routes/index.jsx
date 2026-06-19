@@ -6,7 +6,6 @@ import MainLayout from './MainLayout';
 // Pages (Master Routes)
 import LoansPage from '../pages/LoansPage';
 import InventoryPage from '../pages/InventoryPage';
-import ItemDetailsPage from '../pages/ItemDetailsPage';
 import HistoryPage from '../pages/HistoryPage';
 
 /**
@@ -25,10 +24,6 @@ export const router = createBrowserRouter([
             {
                 path: 'inventario',
                 element: <InventoryPage />
-            },
-            {
-                path: 'inventario/:id',
-                element: <ItemDetailsPage />
             },
             {
                 path: 'historial_rut',

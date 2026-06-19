@@ -9,6 +9,7 @@ import { exportarExcel } from "../services/excel.service";
 
 // Components & Icons
 import SelectCategoria from "../components/inventario/SelectCategoria";
+import EditarItem from "../components/inventario/EditarItem";
 import AgregarItem from "../components/inventario/AgregarItem";
 import DataPageLayout from "../components/layout/DataPageLayout";
 import SearchBar from "../components/ui/SearchBar";
@@ -110,7 +111,7 @@ CommentModal.propTypes = {
     onConfirm: PropTypes.func.isRequired,
 };
 
-const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onOpenLoanModal }) => {
+const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onOpenLoanModal, onOpenEditModal }) => {
     const esCategoria = item.tipo === "categoria";
     const disponibles = esCategoria
         ? (item.extensiones || []).filter((e) => e.disponible).length
@@ -136,7 +137,14 @@ const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onO
                 </TableCell>
                 <TableCell className="text-center">
                     <div className="flex justify-center items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Link to={`/inventario/${item._id}`} className="btn btn-ghost btn-sm">Editar</Link>
+                        <button
+                            type="button"
+                            onClick={() => onOpenEditModal(item._id)}
+                            className="btn btn-ghost btn-sm"
+                        >
+                            Editar
+                        </button>
+
                         {disponibles > 0 ? (
                             <button
                                 type="button"
@@ -185,7 +193,8 @@ InventoryRow.propTypes = {
     expandido: PropTypes.bool.isRequired,
     onToggleExpand: PropTypes.func.isRequired,
     onOpenCommentModal: PropTypes.func.isRequired,
-    onOpenLoanModal: PropTypes.func.isRequired
+    onOpenLoanModal: PropTypes.func.isRequired,
+    onOpenEditModal: PropTypes.func.isRequired
 };
 
 // ==========================================
@@ -210,6 +219,7 @@ export default function Inventario() {
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [loanModalProductId, setLoanModalProductId] = useState(null);
+    const [editModalProductId, setEditModalProductId] = useState(null);
 
     return (
         <>
@@ -295,6 +305,7 @@ export default function Inventario() {
                                     setModalComentario(comentarioActual || "");
                                 }}
                                 onOpenLoanModal={setLoanModalProductId}
+                                onOpenEditModal={setEditModalProductId}
                             />
                         ))}
                     </TableBody>
@@ -318,6 +329,17 @@ export default function Inventario() {
                         <AgregarPrestamo
                             initialProductId={loanModalProductId}
                             onClose={() => setLoanModalProductId(null)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {editModalProductId && (
+                <div className="modal modal-open">
+                    <div className="modal-box">
+                        <EditarItem
+                            itemId={editModalProductId}
+                            onClose={() => setEditModalProductId(null)}
                         />
                     </div>
                 </div>
