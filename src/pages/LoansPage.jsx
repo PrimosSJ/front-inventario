@@ -445,7 +445,7 @@ export default function LoansPage() {
                                     <TableCell className="min-w-40 max-w-60 **:decoration-base-content/60">
                                         <div className="line-clamp-2">
                                             <Tooltip content={grupoProducto}>
-                                                <span className={grupoProducto.length ? "underline decoration-dotted hover:decoration-solid" : ""}>{nombreProducto}</span>
+                                                <span className={grupoProducto.length ? "underline decoration-dotted hover:decoration-solid cursor-help" : ""}>{nombreProducto}</span>
                                             </Tooltip>
                                         </div>
                                     </TableCell>
