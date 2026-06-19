@@ -56,11 +56,8 @@ html, body {
 }
 
 *, *::before, *::after {
+  @apply underline-offset-2;
   box-sizing: border-box;
-}
-
-input, button, textarea, select {
-  font: inherit;
 }
 
 .btn {
@@ -102,9 +99,21 @@ input, button, textarea, select {
   @apply rounded shadow-sm/50;
 }
 
+.table {
+  th {
+    @apply py-2 px-2 bg-base-300 first:px-4 last:px-4;
+  }
+
+  td {
+    @apply py-4 px-2;
+  }
+}
+
 #background {
   @starting-style {
     opacity: 0;
     translate: -10% 0;
   }
 }
+
+@import "./functions.css"
