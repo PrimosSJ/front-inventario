@@ -7,6 +7,32 @@ import { getPrestamoDate } from "../utils/date.utils";
 export const LOANS_QUERY_KEY = ["loans"];
 
 /**
+ * Deep structural immutability definition for baseline comparisons.
+ */
+const INITIAL_STATE = Object.freeze({
+    busqueda: "",
+    filters: Object.freeze({
+        status: "pending",
+        type: "all",
+    })
+});
+
+/**
+ * Architectural utility to detect variations against baseline schemas.
+ */
+const hasStateChanged = (current, baseline) => {
+    if (current === baseline) return false;
+    if (typeof current !== "object" || current === null) return true;
+
+    return Object.keys(baseline).some(key => {
+        if (typeof baseline[key] === "object" && baseline[key] !== null) {
+            return hasStateChanged(current[key], baseline[key]);
+        }
+        return current[key] !== baseline[key];
+    });
+};
+
+/**
  * Hook to manage fetching, real-time updates, and filtering of loans.
  * @param {Object} apiDeps - Injectable API dependencies for testing/mocking.
  */
@@ -14,11 +40,8 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
     const socket = useSocket();
     const queryClient = useQueryClient();
 
-    const [busqueda, setBusqueda] = useState("");
-    const [filters, setFilters] = useState({
-        status: "pending",
-        type: "all",
-    });
+    const [busqueda, setBusqueda] = useState(INITIAL_STATE.busqueda);
+    const [filters, setFilters] = useState({ ...INITIAL_STATE.filters });
     const [sortConfig, setSortConfig] = useState({ key: "fecha", direction: "desc" });
 
     const {
@@ -98,6 +121,10 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
         });
     }, [prestamos, busqueda, filters, sortConfig]);
 
+    const hasActiveFilters = useMemo(() => {
+        return hasStateChanged({ busqueda, filters }, INITIAL_STATE);
+    }, [busqueda, filters]);
+
     return {
         prestamos,
         isLoading,
@@ -105,6 +132,7 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
         busqueda,
         setBusqueda,
         filters,
+        hasActiveFilters,
         handleFilterChange,
         prestamosFiltrados: prestamosProcesados,
         sortConfig,
