@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 
 import MarcarDevuelto from "../components/prestamos/DevolverPrestamo";
 import RutReader from "../components/shared/RutReader";
-import TiempoRestante from "../components/prestamos/TiempoRestante";
+import ReturnStatus from "../components/prestamos/ReturnStatus";
 
 import { getLoansByRutRequest } from "../api/loans.api";
 import { useSocket } from "../context/SocketContext";
-import { formatTimestamp, getPrestamoDate } from "../utils/date.utils";
 
 function renderTipoPrestamoBadge(tipo) {
     if (tipo === "especial") {
@@ -86,7 +85,6 @@ export default function PrestamosPorRut() {
                                 <th className="text-left">Extensión</th>
                                 <th className="text-left">Tipo</th>
                                 <th className="text-left">Fecha</th>
-                                <th className="text-left">Devolución</th>
                                 <th className="text-left">Estado</th>
                                 <th className="w-8"></th>
                             </tr>
@@ -102,21 +100,8 @@ export default function PrestamosPorRut() {
                                         {prestamo.extension_codigo || "-"}
                                     </td>
                                     <td>{renderTipoPrestamoBadge(prestamo.tipo_prestamo)}</td>
-                                    <td>{formatTimestamp(getPrestamoDate(prestamo))}</td>
                                     <td>
-                                        {prestamo.tipo_prestamo === "especial" &&
-                                            prestamo.fecha_devolucion_esperada &&
-                                            !prestamo.finalizado ? (
-                                            <TiempoRestante fechaIso={prestamo.fecha_devolucion_esperada} />
-                                        ) : prestamo.tipo_prestamo === "especial" &&
-                                            prestamo.fecha_devolucion_esperada &&
-                                            prestamo.finalizado ? (
-                                            <span className="text-sm text-gray-400">
-                                                Devuelto {formatTimestamp(prestamo.updatedAt)}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-400">-</span>
-                                        )}
+                                        <ReturnStatus prestamo={prestamo} />
                                     </td>
                                     <td>
                                         {prestamo.finalizado ? (
