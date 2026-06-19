@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
 // Hooks & Services
@@ -14,8 +13,11 @@ import AgregarItem from "../components/inventario/AgregarItem";
 import DataPageLayout from "../components/layout/DataPageLayout";
 import SearchBar from "../components/ui/SearchBar";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
+import { EmptyRow } from "../components/ui/Table/utils";
 import AgregarPrestamo from "../components/prestamos/AgregarPrestamo";
 import { DownloadIcon, UploadIcon, AddIcon } from "../components/icons";
+import Tooltip from "../components/ui/Tooltip";
+import Button from "../components/ui/Button";
 
 // ==========================================
 // PRESENTATIONAL SUB-COMPONENTS
@@ -162,17 +164,54 @@ const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onO
 
             {esCategoria && expandido && (
                 <TableRow>
-                    <TableCell colSpan={7} className="p-0 border-b-0">
-                        <div className="bg-base-200 pl-12 pr-4 py-3 shadow-inner">
-                            <p className="font-semibold text-sm mb-2 text-base-content/80">Extensiones:</p>
-                            {(item.extensiones || []).length === 0 ? (
-                                <p className="text-sm text-base-content/50">Sin extensiones registradas.</p>
-                            ) : (
-                                <table className="table table-sm table-fixed w-full bg-base-300 rounded border border-base-content/10">
-                                    {/* ... [Mantén la tabla nativa anidada aquí igual] ... */}
-                                </table>
-                            )}
-                        </div>
+                    <TableCell colSpan={7} className="p-0! border-b-0">
+                        {(item.extensiones || []).length === 0 ? (
+                            <p className="text-sm text-base-content/50">Sin extensiones registradas.</p>
+                        ) : (
+                            <Table wrapperClassName="w-full bg-base-300/50 rounded overflow-hidden">
+                                <TableHeader className="bg-base-300">
+                                    <TableRow>
+                                        <TableHead className="text-left w-xs">Código</TableHead>
+                                        <TableHead className="text-left w-12">Estado</TableHead>
+                                        <TableHead className="text-left">Comentario</TableHead>
+                                        <TableHead className="w-8"></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {(item.extensiones || []).map((ext) => (
+                                        <TableRow key={ext.codigo} className="*:py-2!">
+                                            <TableCell className="font-mono text-sm">{ext.codigo}</TableCell>
+                                            <TableCell>
+                                                {ext.disponible ? (
+                                                    <span className="badge badge-success badge-sm shadow-sm/50">Disponible</span>
+                                                ) : (
+                                                    <span className="badge badge-error badge-sm shadow-sm/50">Prestado</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="italic">
+                                                {
+                                                    ext.comentario ? (
+                                                        <Tooltip content={ext.comentario}>
+                                                            <span className="truncate w-fit line-clamp-1 max-w-full">&ldquo;{ext.comentario}&rdquo;</span>
+                                                        </Tooltip>
+                                                    ) : (
+                                                        <EmptyRow />
+                                                    )
+                                                }
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button color="neutral" className="whitespace-nowrap" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onOpenCommentModal(item._id, ext.codigo, ext.comentario);
+                                                }}>
+                                                    {ext.comentario ? "Editar comentario" : "Agregar comentario"}
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
                     </TableCell>
                 </TableRow>
             )}
