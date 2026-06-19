@@ -9,3 +9,8 @@ export { default as QRIcon } from './qr';
 export { default as UploadIcon } from './upload';
 export { default as PublicIcon } from './public';
 export { default as StarIcon } from './star';
+export { default as CopyIcon } from './copy';
+export { default as ArrowDownIcon } from './arrow-down';
+export { default as SortIcon } from './sort';
+export { default as ClockExclamationIcon } from './clock-exclamation';
+export { default as FilterIcon } from './filter';
