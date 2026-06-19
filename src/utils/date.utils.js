@@ -1,17 +1,62 @@
 /**
- * Formats a given timestamp to DD/MM/YY HH:MM format.
- * @param {string|number|Date} timestamp - The date to format.
- * @returns {string} The formatted date string.
+ * Formats a given timestamp into a human-readable, localized string tailored for es-CL.
+ * Optimizes readability by hiding the current year and converting recent dates to "Hoy" or "Ayer".
+ *
+ * @param {string|number|Date} timestamp - The input timestamp to format.
+ * @returns {string} The formatted date string, or "-" if the timestamp is invalid.
+ * * @example
+ * // Assuming current date is June 14, 2026:
+ * formatTimestamp("2026-06-14T16:42:00Z"); // => "Hoy, 16:42"
+ * formatTimestamp("2026-06-13T09:15:00Z"); // => "Ayer, 09:15"
+ * formatTimestamp("2026-06-12T12:00:00Z"); // => "12 jun, 12:00"
+ * formatTimestamp("2025-06-12T12:00:00Z"); // => "12 jun '25, 12:00"
  */
 export function formatTimestamp(timestamp) {
     if (!timestamp) return "-";
-    const d = new Date(timestamp);
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yy = String(d.getFullYear()).slice(-2);
-    const hh = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-    return `${dd}/${mm}/${yy} ${hh}:${min}`;
+
+    const targetDate = new Date(timestamp);
+    if (isNaN(targetDate.getTime())) return "-";
+
+    const now = new Date();
+
+    // Reset times to midnight for precise calendar day comparisons
+    const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const diffTime = nowMidnight.getTime() - targetMidnight.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    // Format hours and minutes securely
+    const hh = String(targetDate.getHours()).padStart(2, "0");
+    const min = String(targetDate.getMinutes()).padStart(2, "0");
+    const timeString = `${hh}:${min}`;
+
+    // Contextual handling for Today and Yesterday
+    if (diffDays === 0) {
+        return `Hoy, ${timeString}`;
+    }
+    if (diffDays === 1) {
+        return `Ayer, ${timeString}`;
+    }
+
+    // Extract localized short month name for Chile (e.g., "jun.")
+    const monthFormatter = new Intl.DateTimeFormat("es-CL", { month: "short" });
+    let monthName = monthFormatter.format(targetDate).toLowerCase();
+
+    // Clean trailing dots added by Intl localization to keep the layout minimalist
+    if (monthName.endsWith(".")) {
+        monthName = monthName.slice(0, -1);
+    }
+
+    const day = targetDate.getDate();
+
+    // Conditional year rendering based on current system year
+    if (targetDate.getFullYear() === now.getFullYear()) {
+        return `${day} ${monthName}, ${timeString}`;
+    }
+
+    const shortYear = String(targetDate.getFullYear()).slice(-2);
+    return `${day} ${monthName} '${shortYear}, ${timeString}`;
 }
 
 /**
