@@ -2,19 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import SelectCategoria from "./SelectCategoria";
 import { createInventoryItemRequest } from "../../api/inventory.api";
-
-const RANGO_MAX = 50;
-
-/**
- * Generates an array of formatted extension codes.
- */
-function generarCodigos(prefijo, desde, hasta) {
-    const codigos = [];
-    for (let i = desde; i <= hasta; i++) {
-        codigos.push(`${prefijo}-${String(i).padStart(2, "0")}`);
-    }
-    return codigos;
-}
+import { validateExtensionGeneration, buildItemPayload } from "../../utils/inventory.utils";
 
 /**
  * Form component to add a new inventory item. Designed to be embedded within a modal.
@@ -44,27 +32,15 @@ export default function AgregarItem({ onClose }) {
     };
 
     const handleGenerar = () => {
-        const p = prefijo.trim();
-        if (!p) {
-            setGenError("El prefijo no puede estar vacío.");
+        const { error, codes } = validateExtensionGeneration(prefijo, desde, hasta);
+
+        if (error) {
+            setGenError(error);
             return;
         }
-        if (desde < 1) {
-            setGenError('"Desde" debe ser mayor o igual a 1.');
-            return;
-        }
-        if (hasta < desde) {
-            setGenError('"Hasta" debe ser mayor o igual a "Desde".');
-            return;
-        }
-        const cantidad = hasta - desde + 1;
-        if (cantidad > RANGO_MAX) {
-            setGenError(`El rango máximo permitido es ${RANGO_MAX} extensiones (pediste ${cantidad}).`);
-            return;
-        }
+
         setGenError(null);
-        const codigos = generarCodigos(p, desde, hasta);
-        setExtensiones(codigos.map((c) => ({ codigo: c, disponible: true })));
+        setExtensiones(codes.map((c) => ({ codigo: c, disponible: true })));
     };
 
     const handleLimpiar = () => {
@@ -76,37 +52,30 @@ export default function AgregarItem({ onClose }) {
     };
 
     const handleAddItem = () => {
-        const payload = {
-            nombre: newItem.nombre,
-            descripcion: newItem.descripcion,
-            categoria: newItem.categoria,
-            tipo: newItem.tipo,
-        };
-
-        if (newItem.tipo === "categoria") {
-            if (extensiones.length === 0) {
-                setToast({ tipo: "error", mensaje: "Debes generar al menos una extensión." });
-                setTimeout(() => setToast(null), 2500);
-                return;
-            }
-            payload.extensiones = extensiones;
-        } else {
-            payload.stock = newItem.stock;
+        // Validación específica del formulario de creación
+        if (newItem.tipo === "categoria" && extensiones.length === 0) {
+            setToast({ tipo: "error", mensaje: "Debes generar al menos una extensión." });
+            setTimeout(() => setToast(null), 2500);
+            return;
         }
 
-        createInventoryItemRequest(payload)
-            .then(() => {
-                setToast({ tipo: "success", mensaje: "Item agregado exitosamente" });
-                // Let the user see the success message briefly before closing the modal
-                setTimeout(() => {
-                    onClose();
-                }, 1000);
-            })
-            .catch((err) => {
-                const msg = err.response?.data?.message || "Error al agregar item";
-                setToast({ tipo: "error", mensaje: msg });
-                setTimeout(() => setToast(null), 2500);
-            });
+        try {
+            const payload = buildItemPayload({ ...newItem, extensiones });
+
+            createInventoryItemRequest(payload)
+                .then(() => {
+                    setToast({ tipo: "success", mensaje: "Item agregado exitosamente" });
+                    setTimeout(() => onClose(), 1000);
+                })
+                .catch((err) => {
+                    const msg = err.response?.data?.message || "Error al agregar item";
+                    setToast({ tipo: "error", mensaje: msg });
+                    setTimeout(() => setToast(null), 2500);
+                });
+        } catch (e) {
+            setToast({ tipo: "error", mensaje: e.message });
+            setTimeout(() => setToast(null), 2500);
+        }
     };
 
     return (

@@ -6,19 +6,7 @@ import QRgenerator from './QRgenerator';
 import SelectCategoria from './SelectCategoria';
 
 import { getInventoryItemRequest, updateInventoryItemRequest } from "../../api/inventory.api";
-
-const RANGO_MAX = 50;
-
-/**
- * Generates an array of formatted extension codes.
- */
-function generarCodigos(prefijo, desde, hasta) {
-    const codigos = [];
-    for (let i = desde; i <= hasta; i++) {
-        codigos.push(`${prefijo}-${String(i).padStart(2, "0")}`);
-    }
-    return codigos;
-}
+import { validateExtensionGeneration, buildItemPayload } from "../../utils/inventory.utils";
 
 /**
  * Modal-ready form component to edit an existing inventory item.
@@ -69,28 +57,17 @@ export default function EditarItem({ itemId, onClose }) {
     };
 
     const handleGenerar = () => {
-        const p = prefijo.trim();
-        if (!p) { setGenError("El prefijo no puede estar vacío."); return; }
-        if (desde < 1) { setGenError('"Desde" debe ser mayor o igual a 1.'); return; }
-        if (hasta < desde) { setGenError('"Hasta" debe ser mayor o igual a "Desde".'); return; }
-
-        const cantidad = hasta - desde + 1;
-        if (cantidad > RANGO_MAX) {
-            setGenError(`Rango máximo: ${RANGO_MAX} (pediste ${cantidad}).`);
-            return;
-        }
-
-        const nuevos = generarCodigos(p, desde, hasta);
         const codigosExistentes = new Set(item.extensiones.map((e) => e.codigo));
-        const colisiones = nuevos.filter((c) => codigosExistentes.has(c));
 
-        if (colisiones.length > 0) {
-            setGenError(`Código(s) ya existente(s): ${colisiones.join(", ")}`);
+        const { error, codes } = validateExtensionGeneration(prefijo, desde, hasta, codigosExistentes);
+
+        if (error) {
+            setGenError(error);
             return;
         }
 
         setGenError(null);
-        setPreview(nuevos.map((c) => ({ codigo: c, disponible: true, comentario: "" })));
+        setPreview(codes.map((c) => ({ codigo: c, disponible: true, comentario: "" })));
     };
 
     const confirmarAgregarExtensiones = () => {
@@ -113,29 +90,23 @@ export default function EditarItem({ itemId, onClose }) {
             return;
         }
 
-        const payload = {
-            nombre: item.nombre,
-            descripcion: item.descripcion,
-            categoria: item.categoria,
-            tipo: item.tipo,
-        };
+        try {
+            const payload = buildItemPayload(item);
 
-        if (item.tipo === "categoria") {
-            payload.extensiones = item.extensiones;
-        } else {
-            payload.stock = item.stock;
+            updateInventoryItemRequest(itemId, payload)
+                .then(() => {
+                    setToast({ tipo: "success", mensaje: "Item actualizado exitosamente." });
+                    setTimeout(() => onClose(), 1000);
+                })
+                .catch((err) => {
+                    const msg = err.response?.data?.message || "Error al guardar";
+                    setToast({ tipo: "error", mensaje: msg });
+                    setTimeout(() => setToast(null), 2500);
+                });
+        } catch (e) {
+            setToast({ tipo: "error", mensaje: e.message });
+            setTimeout(() => setToast(null), 2500);
         }
-
-        updateInventoryItemRequest(itemId, payload)
-            .then(() => {
-                setToast({ tipo: "success", mensaje: "Item actualizado exitosamente." });
-                setTimeout(() => onClose(), 1000);
-            })
-            .catch((err) => {
-                const msg = err.response?.data?.message || "Error al guardar";
-                setToast({ tipo: "error", mensaje: msg });
-                setTimeout(() => setToast(null), 2500);
-            });
     };
 
     if (error && !item) {
