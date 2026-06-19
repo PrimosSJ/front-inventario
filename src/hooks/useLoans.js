@@ -1,7 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSocket } from "../context/SocketContext";
-import { getLoansRequest as defaultGetLoansRequest } from "../api/loans.api";
+import { getLoansRequest as defaultGetLoansRequest, returnLoanRequest } from "../api/loans.api";
 import { getPrestamoDate } from "../utils/date.utils";
+
+export const LOANS_QUERY_KEY = ["loans"];
 
 /**
  * Hook to manage fetching, real-time updates, and filtering of loans.
@@ -9,7 +12,7 @@ import { getPrestamoDate } from "../utils/date.utils";
  */
 export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
     const socket = useSocket();
-    const [prestamos, setPrestamos] = useState([]);
+    const queryClient = useQueryClient();
 
     const [busqueda, setBusqueda] = useState("");
     const [filters, setFilters] = useState({
@@ -17,6 +20,40 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
         type: "all",
     });
     const [sortConfig, setSortConfig] = useState({ key: "fecha", direction: "desc" });
+
+    const {
+        data: prestamos = [],
+        isLoading,
+        isError
+    } = useQuery({
+        queryKey: LOANS_QUERY_KEY,
+        queryFn: async () => {
+            const response = await getLoans();
+            return response.data;
+        }
+    });
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleUpdate = (updatedLoan) => {
+            queryClient.setQueryData(LOANS_QUERY_KEY, (oldData) => {
+                if (!oldData) return [updatedLoan];
+
+                const exists = oldData.some((p) => p._id === updatedLoan._id);
+                if (exists) {
+                    return oldData.map((p) => (p._id === updatedLoan._id ? { ...p, ...updatedLoan } : p));
+                }
+                return [updatedLoan, ...oldData];
+            });
+        };
+
+        socket.on("prestamosUpdate", handleUpdate);
+
+        return () => {
+            socket.off("prestamosUpdate", handleUpdate);
+        };
+    }, [socket, queryClient]);
 
     /**
      * Updates a specific filter key dynamically.
@@ -26,28 +63,6 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
     const handleFilterChange = (key, value) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
     };
-
-    useEffect(() => {
-        getLoans()
-            .then((res) => setPrestamos(res.data))
-            .catch((err) => console.error("Failed to load loans:", err));
-
-        if (!socket) return;
-
-        const handleUpdate = (data) => {
-            setPrestamos((prev) => {
-                if (data && data._id && prev.some((p) => p._id === data._id)) {
-                    return prev.map((p) => (p._id === data._id ? { ...p, ...data } : p));
-                }
-                return [data, ...prev];
-            });
-        };
-
-        socket.on("prestamosUpdate", handleUpdate);
-        return () => {
-            socket.off("prestamosUpdate", handleUpdate);
-        };
-    }, [socket, getLoans]);
 
     const prestamosProcesados = useMemo(() => {
         const busquedaLower = busqueda.trim().toLowerCase();
@@ -85,7 +100,8 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
 
     return {
         prestamos,
-        setPrestamos,
+        isLoading,
+        isError,
         busqueda,
         setBusqueda,
         filters,
@@ -94,4 +110,80 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
         sortConfig,
         setSortConfig
     };
+}
+
+/**
+ * Mutation to handle a single loan return with Optimistic Updates.
+ */
+export function useReturnLoanMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id) => returnLoanRequest(id),
+        // Fired immediately when mutate() is called, before the API responds
+        onMutate: async (id) => {
+            // Cancel background refetches to prevent race conditions
+            await queryClient.cancelQueries({ queryKey: LOANS_QUERY_KEY });
+
+            // Snapshot the previous data for a potential rollback
+            const previousLoans = queryClient.getQueryData(LOANS_QUERY_KEY);
+
+            // Optimistically update the cache
+            queryClient.setQueryData(LOANS_QUERY_KEY, (oldLoans) => {
+                if (!oldLoans) return oldLoans;
+                return oldLoans.map((loan) =>
+                    loan._id === id
+                        ? { ...loan, finalizado: true, updatedAt: new Date().toISOString() }
+                        : loan
+                );
+            });
+
+            // Return the context containing the snapshot
+            return { previousLoans };
+        },
+        // Fired only if the API request fails
+        onError: (error, id, context) => {
+            // Rollback to the snapshot
+            if (context?.previousLoans) {
+                queryClient.setQueryData(LOANS_QUERY_KEY, context.previousLoans);
+            }
+            console.error("Mutation failed, cache rolled back:", error);
+        }
+    });
+}
+
+/**
+ * Mutation to handle bulk loan returns with Optimistic Updates.
+ */
+export function useBulkReturnLoansMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        // Execute all API requests concurrently
+        mutationFn: async (ids) => {
+            const requests = Array.from(ids).map((id) => returnLoanRequest(id));
+            return Promise.all(requests);
+        },
+        onMutate: async (ids) => {
+            await queryClient.cancelQueries({ queryKey: LOANS_QUERY_KEY });
+            const previousLoans = queryClient.getQueryData(LOANS_QUERY_KEY);
+            const idsSet = new Set(ids);
+
+            queryClient.setQueryData(LOANS_QUERY_KEY, (oldLoans) => {
+                if (!oldLoans) return oldLoans;
+                return oldLoans.map((loan) =>
+                    idsSet.has(loan._id)
+                        ? { ...loan, finalizado: true, updatedAt: new Date().toISOString() }
+                        : loan
+                );
+            });
+
+            return { previousLoans };
+        },
+        onError: (error, ids, context) => {
+            if (context?.previousLoans) {
+                queryClient.setQueryData(LOANS_QUERY_KEY, context.previousLoans);
+            }
+        }
+    });
 }

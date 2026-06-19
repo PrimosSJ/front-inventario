@@ -1,30 +1,26 @@
-import { returnLoanRequest } from "../../api/loans.api";
+import PropTypes from 'prop-types';
+import { useReturnLoanMutation } from "../../hooks/useLoans";
 
-export default function MarcarDevuelto(props) {
-    const { _id, finalizado, onUpdate } = props;
+export default function MarcarDevuelto({ _id, finalizado }) {
+    const { mutate: returnLoan, isPending } = useReturnLoanMutation();
 
     const handleClick = (e) => {
         e.preventDefault();
-        returnLoanRequest(_id)
-            .then((res) => {
-                // Si el backend devuelve el préstamo actualizado, usarlo; si no, aplicar un cambio optimista
-                const updated = res.data && res.data._id ? res.data : { _id, finalizado: true };
-                if (typeof onUpdate === 'function') onUpdate(updated);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+        returnLoan(_id);
     };
 
     return (
-        <>
-            <button
-                onClick={handleClick}
-                disabled={finalizado}
-                className={`btn btn-sm ${finalizado ? 'btn-disabled' : 'btn-success'}`}
-            >
-                Marcar Devuelto
-            </button>
-        </>
-    )
+        <button
+            onClick={handleClick}
+            disabled={finalizado || isPending}
+            className={`btn btn-sm ${finalizado ? 'btn-disabled' : 'btn-success'}`}
+        >
+            {isPending ? "Procesando..." : "Marcar Devuelto"}
+        </button>
+    );
 }
+
+MarcarDevuelto.propTypes = {
+    _id: PropTypes.string.isRequired,
+    finalizado: PropTypes.bool.isRequired,
+};

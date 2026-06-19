@@ -3,8 +3,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { formatTimestamp, getPrestamoDate } from "../utils/date.utils";
 import { formatRut } from "../utils/rut.utils";
 
-import { useLoansData } from "../hooks/useLoans";
-import { returnLoanRequest } from "../api/loans.api";
+import { useLoansData, useBulkReturnLoansMutation } from "../hooks/useLoans";
 
 import { StarIcon, PublicIcon, SortIcon, ArrowDownIcon, FilterIcon } from "../components/icons";
 import ReturnStatus from "../components/prestamos/ReturnStatus";
@@ -218,13 +217,13 @@ export default function LoansPage() {
     const {
         busqueda, setBusqueda,
         filters, handleFilterChange,
-        prestamosFiltrados, setPrestamos,
+        prestamosFiltrados,
         sortConfig, setSortConfig
     } = useLoansData();
 
     // UI Selection State
     const [selectedLoans, setSelectedLoans] = useState(new Set());
-    const [isProcessing, setIsProcessing] = useState(false);
+    const { mutate: returnBulkLoans, isPending: isProcessing } = useBulkReturnLoansMutation();
 
     /**
      * Updates the active sorting key and direction directly.
@@ -267,7 +266,7 @@ export default function LoansPage() {
      * Executes the bulk return action concurrently.
      * Uses Promise.all to map over selected IDs and handle responses efficiently.
      */
-    const handleBulkReturn = async () => {
+    const handleBulkReturn = () => {
         if (selectedLoans.size === 0) return;
         if (selectedLoans.size > 2) {
             const isConfirmed = window.confirm(
@@ -276,30 +275,12 @@ export default function LoansPage() {
             if (!isConfirmed) return;
         }
 
-        setIsProcessing(true);
-
-        try {
-            // Initiate concurrent API requests for all selected loan IDs
-            const requests = Array.from(selectedLoans).map((id) => returnLoanRequest(id));
-            await Promise.all(requests);
-
-            // Optimistic UI update: Mark all selected loans as returned in local state
-            setPrestamos((prevLoans) =>
-                prevLoans.map((loan) =>
-                    selectedLoans.has(loan._id)
-                        ? { ...loan, finalizado: true, updatedAt: new Date().toISOString() }
-                        : loan
-                )
-            );
-
-            // Clear selections upon success
-            setSelectedLoans(new Set());
-        } catch (error) {
-            console.error("Failed to execute bulk return operation:", error);
-            // In a production environment, implement a toast notification here to warn the user
-        } finally {
-            setIsProcessing(false);
-        }
+        // Fire the mutation and pass a callback to clear the selection ONLY on success
+        returnBulkLoans(selectedLoans, {
+            onSuccess: () => {
+                setSelectedLoans(new Set());
+            }
+        });
     };
 
     /** Indeterminate trigger */
