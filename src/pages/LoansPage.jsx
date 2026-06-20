@@ -353,7 +353,7 @@ export default function LoansPage() {
                 loadingSlot={<SkeletonTable />}
             >
                 {/* Main Data Table */}
-                <Table wrapperClassName="flex-1 grow min-h-0" zebra>
+                <Table wrapperClassName="flex-1 grow min-h-0 scrollbar-gutter-stable" zebra>
                     <TableHeader className="bg-base-200 select-none">
                         <TableRow>
                             <TableHead pin className="w-8 text-center">
@@ -382,7 +382,7 @@ export default function LoansPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <AnimatePresence mode="popLayout">
+                        <AnimatePresence>
                             {prestamosFiltrados.map((prestamo) => {
                                 const isSelected = selectedLoans.has(prestamo._id);
                                 const isFinalizado = prestamo.finalizado;
@@ -393,9 +393,9 @@ export default function LoansPage() {
                                     <TableRow
                                         key={prestamo._id}
                                         as={motion.tr}
-                                        layout
+                                        layout="position"
                                         animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                                        exit={{ opacity: 0, transition: { duration: 0.15 } }}
                                         transition={{
                                             layout: { type: "spring", stiffness: 300, damping: 30 }
                                         }}
