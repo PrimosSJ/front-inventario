@@ -181,7 +181,7 @@ export default function LoansPage() {
      */
     const handleSort = useCallback((key) => {
         setSortConfig((prev) => {
-            const direction = prev.key === key && prev.direction === "asc" ? "desc" : "asc";
+            const direction = prev.key === key && prev.direction === "desc" ? "asc" : "desc";
             return { key, direction };
         });
     }, [setSortConfig]);
@@ -329,7 +329,7 @@ export default function LoansPage() {
                             {TABLE_COLUMNS.map(({ key, label, sortable, alignment, className = "" }) => {
                                 const isCurrentSort = sortConfig.key === key;
                                 const headerClasses = sortable
-                                    ? `cursor-pointer transition-colors text-base-content ${className}`
+                                    ? `cursor-pointer group transition-colors text-base-content ${className}`
                                     : className;
                                 const alignmentClasses = {
                                     "center": "text-center justify-center",
@@ -346,10 +346,10 @@ export default function LoansPage() {
                                         <Tooltip content={sortable ? `Ordenar por ${label.toLowerCase()}` : ""}>
                                             <div className={`flex items-center gap-1 ${alignmentClasses[alignment] ?? "text-left justify-start"}`}>
                                                 {label}
-                                                {sortable && isCurrentSort && (
+                                                {sortable && (
                                                     <ArrowDownIcon
-                                                        className={`size-5 bg-primary/50 text-base-content rounded-full p-px ml-1 transition-all ${sortConfig.direction === "asc" ? "rotate-180" : ""
-                                                            }`}
+                                                        className={`size-5 text-base-content rounded-full p-px ml-1 transition-all ${isCurrentSort && sortConfig.direction === "asc" ? "rotate-180" : ""
+                                                            } ${isCurrentSort ? "bg-primary/50" : "opacity-0 group-hover:opacity-100"}`}
                                                     />
                                                 )}
                                             </div>
