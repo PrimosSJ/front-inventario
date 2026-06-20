@@ -16,10 +16,10 @@ export default function Header() {
     const [showPrestamoModal, setShowPrestamoModal] = useState(false);
 
     const linkClass = ({ isActive }) =>
-        `transition-all duration-200 ${isActive ? 'text-primary border-b-2 border-primary' : 'link-hover text-base-content/80'}`;
+        `flex h-full transition-all duration-200 ${isActive ? 'text-primary before:content-[""] before:absolute before:h-full before:left-1/2 before:-translate-x-1/2 before:top-0 before:w-full before:scale-y-300 before:scale-x-150 before:bg-linear-to-b before:from-25% before:to-primary/20' : 'link-hover text-base-content/80'}`;
 
     return (
-        <header className="bg-gradient-to-r sticky top-0 z-[1000] overflow-hidden from-base-200 to-base-100 from-[50%] border-b border-b-[#fff1]">
+        <header className="bg-linear-to-r sticky top-0 z-1000 overflow-hidden from-base-200 to-base-100 from-50% border-b border-b-[#fff1]">
             <div className="relative container mx-auto px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-4">
 
                 {/* Brand / Title Section */}
@@ -35,7 +35,7 @@ export default function Header() {
 
                 {/* Navigation & User Controls */}
                 <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                    <nav className="flex flex-wrap items-center justify-center gap-8">
+                    <nav className="flex flex-wrap items-center justify-center gap-8 h-full *:relative">
                         <NavLink
                             to="/inventario"
                             className={linkClass}
