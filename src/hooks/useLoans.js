@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSocket } from "../context/SocketContext";
 import { getLoansRequest as defaultGetLoansRequest, returnLoanRequest } from "../api/loans.api";
 import { getPrestamoDate } from "../utils/date.utils";
+import { normalizeText, lazyMatch } from "../utils/search.utils";
 
 export const LOANS_QUERY_KEY = ["loans"];
 
@@ -88,16 +89,19 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
     };
 
     const prestamosProcesados = useMemo(() => {
-        const busquedaLower = busqueda.trim().toLowerCase();
+        const normalizedQuery = normalizeText(busqueda);
 
         // Filtrado
         let result = prestamos.filter((p) => {
-            if (busquedaLower && !(
-                (p.nombre || "").toLowerCase().includes(busquedaLower) ||
-                (p.rut || "").toLowerCase().includes(busquedaLower) ||
-                (p.nombre_producto || "").toLowerCase().includes(busquedaLower) ||
-                (p.email || "").toLowerCase().includes(busquedaLower)
-            )) return false;
+            if (normalizedQuery) {
+                const matchesSearch =
+                    lazyMatch(p.nombre, normalizedQuery) ||
+                    lazyMatch(p.rut, normalizedQuery) ||
+                    lazyMatch(p.nombre_producto, normalizedQuery) ||
+                    lazyMatch(p.email, normalizedQuery);
+
+                if (!matchesSearch) return false;
+            }
 
             if (filters.status === "pending" && p.finalizado) return false;
             if (filters.status === "returned" && !p.finalizado) return false;
@@ -110,14 +114,33 @@ export function useLoansData({ getLoans = defaultGetLoansRequest } = {}) {
         return result.sort((a, b) => {
             let valA, valB;
             switch (sortConfig.key) {
-                case "rut": valA = a.rut ?? ""; valB = b.rut ?? ""; break;
-                case "nombre": valA = (a.nombre ?? "").toLowerCase(); valB = (b.nombre ?? "").toLowerCase(); break;
-                case "email": valA = (a.email ?? "").toLowerCase(); valB = (b.email ?? "").toLowerCase(); break;
-                case "producto": valA = (a.nombre_producto ?? "").toLowerCase(); valB = (b.nombre_producto ?? "").toLowerCase(); break;
-                case "fecha": default: valA = new Date(getPrestamoDate(a)).getTime(); valB = new Date(getPrestamoDate(b)).getTime(); break;
+                case "rut":
+                    valA = a.rut ?? "";
+                    valB = b.rut ?? "";
+                    break;
+                case "nombre":
+                    valA = normalizeText(a.nombre);
+                    valB = normalizeText(b.nombre);
+                    break;
+                case "email":
+                    valA = normalizeText(a.email);
+                    valB = normalizeText(b.email);
+                    break;
+                case "producto":
+                    valA = normalizeText(a.nombre_producto);
+                    valB = normalizeText(b.nombre_producto);
+                    break;
+                case "fecha":
+                default:
+                    valA = new Date(getPrestamoDate(a)).getTime();
+                    valB = new Date(getPrestamoDate(b)).getTime();
+                    break;
             }
+
             if (valA === valB) return 0;
-            return sortConfig.direction === "asc" ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+            return sortConfig.direction === "asc"
+                ? (valA > valB ? 1 : -1)
+                : (valA < valB ? 1 : -1);
         });
     }, [prestamos, busqueda, filters, sortConfig]);
 
