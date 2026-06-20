@@ -4,9 +4,9 @@ import { tv } from "tailwind-variants";
 
 const dataStateStyles = tv({
     slots: {
-        container: "flex flex-col items-center justify-center min-h-[300px] w-full p-6 text-center animate-fade-in",
-        title: "text-lg font-semibold text-base-content mt-4",
-        description: "text-sm text-base-content/60 max-w-md mt-1 mb-6",
+        container: "flex flex-col gap-2 items-center justify-center min-h-75 h-full flex-1 w-full p-6 text-center animate-fade-in",
+        title: "text-lg font-semibold text-base-content not-first:mt-4",
+        description: "text-sm text-base-content/60 max-w-md not-last:mb-6",
         iconWrapper: "text-base-content/40 p-4 bg-base-200/50 rounded-full"
     }
 });
@@ -18,7 +18,7 @@ const { container, title, description, iconWrapper } = dataStateStyles();
  */
 const DefaultLoading = () => (
     <div className={container()}>
-        <span className="loading loading-spinner loading-lg text-primary" />
+        <span className="loading loading-spinner loading-xl text-primary" />
     </div>
 );
 
@@ -27,16 +27,11 @@ const DefaultLoading = () => (
  */
 const DefaultError = ({ error, onRetry }) => (
     <div className={container()}>
-        <div className={iconWrapper()}>
-            <svg className="size-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-        </div>
-        <h3 className={title()}>Error Loading Data</h3>
-        <p className={description()}>{error?.message || "An unexpected network or client error occurred."}</p>
+        <h3 className={title()}>Error al cargar</h3>
+        <p className={description()}>{error?.message || "Ha ocurrido un error inesperado."}</p>
         {onRetry && (
             <button type="button" onClick={onRetry} className="btn btn-primary btn-sm normal-case font-medium">
-                Try Again
+                Intentar de nuevo
             </button>
         )}
     </div>
@@ -47,13 +42,8 @@ const DefaultError = ({ error, onRetry }) => (
  */
 const DefaultEmpty = () => (
     <div className={container()}>
-        <div className={iconWrapper()}>
-            <svg className="size-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-4.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293H10.12a1 1 0 01-.707-.293L7.00 13.293A1 1 0 006.293 13H2" />
-            </svg>
-        </div>
-        <h3 className={title()}>No Records Found</h3>
-        <p className={description()}>There is no data available to list in this section right now.</p>
+        <h3 className={title()}>No hay registros</h3>
+        <p className={description()}>No hay ningun registro en la base de datos.</p>
     </div>
 );
 
@@ -62,16 +52,11 @@ const DefaultEmpty = () => (
  */
 const DefaultEmptyFilters = ({ onClearFilters }) => (
     <div className={container()}>
-        <div className={iconWrapper()}>
-            <svg className="size-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        </div>
-        <h3 className={title()}>No Matches Found</h3>
-        <p className={description()}>Your active filters yielded 0 results. Try widening or updating your search parameters.</p>
+        <h3 className={title()}>No hay resultados</h3>
+        <p className={description()}>No hubieron resultados para los filtros activos.</p>
         {onClearFilters && (
             <button type="button" onClick={onClearFilters} className="btn btn-outline btn-sm normal-case font-medium">
-                Clear Active Filters
+                Limpiar filtros
             </button>
         )}
     </div>
