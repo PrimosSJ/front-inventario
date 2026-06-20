@@ -40,12 +40,17 @@ const DefaultError = ({ error, onRetry }) => (
 /**
  * Default Empty State Representation (No items found in data source).
  */
-const DefaultEmpty = () => (
+export const DefaultEmpty = ({ title: titleContent, description: descriptionContent }) => (
     <div className={container()}>
-        <h3 className={title()}>No hay registros</h3>
-        <p className={description()}>No hay ningun registro en la base de datos.</p>
+        <h3 className={title()}>{titleContent || "No hay registros"}</h3>
+        <p className={description()}>{descriptionContent || "No hay ningún registro en la base de datos."}</p>
     </div>
 );
+
+DefaultEmpty.propTypes = {
+    title: PropTypes.string,
+    description: PropTypes.string
+};
 
 /**
  * Default Empty Filters State Representation (Results filtered out by active user queries).
