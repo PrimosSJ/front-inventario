@@ -20,72 +20,6 @@ import QueryStateManager from "../components/ui/QueryStateManager";
 import { SkeletonTable } from "../components/ui/Skeleton";
 
 /**
- * Dropdown component for Sorting
- */
-const SortDropdown = ({ sortConfig, onSortChange }) => {
-    const options = [
-        { key: "fecha", label: "Fecha", labelOrder: ["Antigua a Reciente", "Reciente a Antigua"] },
-        { key: "nombre", label: "Nombre", labelOrder: ["A a la Z", "Z a la A"] },
-        { key: "email", label: "Email", labelOrder: ["A a la Z", "Z a la A"] },
-        { key: "rut", label: "RUT", labelOrder: ["0 a 9", "9 a 0"] },
-        { key: "producto", label: "Producto", labelOrder: ["A a la Z", "Z a la A"] },
-    ];
-
-    const currentOption = options.find(o => o.key === sortConfig.key);
-    const currentLabel = currentOption?.label;
-
-    return (
-        <Menu placement="bottom-end">
-            <MenuTrigger>
-                <div>
-                    <Tooltip content={`Ordenar por: ${currentLabel || "Desconocido"}`} placement="top">
-                        <Button color="neutral" leftIcon={<SortIcon />}>
-                            {currentLabel || "Ordenar por"}
-                            <ArrowDownIcon
-                                className={`place-self-center ml-2 size-5 bg-primary/50 rounded-full p-px transition-all ${sortConfig.direction === "asc" ? "rotate-180" : ""}`}
-                            />
-                        </Button>
-                    </Tooltip>
-                </div>
-            </MenuTrigger>
-
-            <MenuContent>
-                <MenuLabel>Ordenar por</MenuLabel>
-                {options.map((opt) => {
-                    return (
-                        <MenuItem
-                            key={opt.key}
-                            closeOnClick={false}
-                            onClick={() => onSortChange(opt.key, sortConfig.direction)}
-                            data-active={sortConfig.key === opt.key}
-                        >
-                            {opt.label}
-                        </MenuItem>
-                    );
-                })}
-
-                <MenuSeparator />
-                <MenuLabel>Ordenar la dirección</MenuLabel>
-                <MenuItem
-                    closeOnClick={false}
-                    onClick={() => onSortChange(sortConfig.key, "asc")}
-                    data-active={sortConfig.direction === "asc"}
-                >
-                    {currentOption?.labelOrder?.[0] || "Ascendente"}
-                </MenuItem>
-                <MenuItem
-                    closeOnClick={false}
-                    onClick={() => onSortChange(sortConfig.key, "desc")}
-                    data-active={sortConfig.direction === "desc"}
-                >
-                    {currentOption?.labelOrder?.[1] || "Descendente"}
-                </MenuItem>
-            </MenuContent>
-        </Menu>
-    );
-};
-
-/**
  * Dropdown component for Filtering
  */
 const FilterDropdown = ({ filters, onFilterChange, hasActiveFilters }) => {
@@ -207,6 +141,22 @@ function parseProductString(rawProductName) {
 }
 
 /**
+ * Configuration for table columns definition.
+ * @type {Array<{ key: string | null, label: string, sortable: boolean, alignment?: string, className?: string }>}
+ */
+const TABLE_COLUMNS = [
+    { key: "rut", label: "Rut", sortable: true },
+    { key: "nombre", label: "Nombre", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+    { key: "producto", label: "Producto", sortable: true },
+    { key: null, label: "Extensión", sortable: false },
+    { key: null, label: "Tipo", sortable: false, alignment: "center" },
+    { key: "fecha", label: "Fecha", sortable: true },
+    { key: null, label: "Estado", sortable: false },
+    { key: null, label: "", sortable: false, className: "w-8" }
+];
+
+/**
  * Master Page for Managing Loans.
  * Includes bulk actions, filtering, and a modernized data table.
  */
@@ -226,10 +176,14 @@ export default function LoansPage() {
     const { mutate: returnBulkLoans, isPending: isProcessing } = useBulkReturnLoansMutation();
 
     /**
-     * Updates the active sorting key and direction directly.
+     * Toggles sorting direction or switches the active sorting key.
+     * * @param {string} key - The column key to sort by.
      */
-    const handleSort = useCallback((key, direction) => {
-        setSortConfig({ key, direction });
+    const handleSort = useCallback((key) => {
+        setSortConfig((prev) => {
+            const direction = prev.key === key && prev.direction === "asc" ? "desc" : "asc";
+            return { key, direction };
+        });
     }, [setSortConfig]);
 
     const returnableLoans = useMemo(() => {
@@ -300,7 +254,6 @@ export default function LoansPage() {
                         onChange={(e) => setBusqueda(e.target.value)}
                         wrapperClassName="w-full min-w-sm"
                     />
-                    <SortDropdown sortConfig={sortConfig} onSortChange={handleSort} />
                     <FilterDropdown filters={filters} onFilterChange={handleFilterChange} hasActiveFilters={hasActiveFilters} />
                 </>
             }
@@ -370,15 +323,38 @@ export default function LoansPage() {
                                     </label>
                                 </Tooltip>
                             </TableHead>
-                            <TableHead pin>Rut</TableHead>
-                            <TableHead pin>Nombre</TableHead>
-                            <TableHead pin>Email</TableHead>
-                            <TableHead pin>Producto</TableHead>
-                            <TableHead pin>Extensión</TableHead>
-                            <TableHead pin className="text-center">Tipo</TableHead>
-                            <TableHead pin>Fecha</TableHead>
-                            <TableHead pin>Estado</TableHead>
-                            <TableHead pin className="w-8"></TableHead>
+
+                            {TABLE_COLUMNS.map(({ key, label, sortable, alignment, className = "" }) => {
+                                const isCurrentSort = sortConfig.key === key;
+                                const headerClasses = sortable
+                                    ? `cursor-pointer bg-white/5 hover:bg-white/10 transition-colors text-base-content ${className}`
+                                    : className;
+                                const alignmentClasses = {
+                                    "center": "text-center justify-center",
+                                    "end": "text-right justify-end"
+                                };
+
+                                return (
+                                    <TableHead
+                                        key={label || key || "actions"}
+                                        pin
+                                        className={headerClasses}
+                                        onClick={sortable ? () => handleSort(key) : undefined}
+                                    >
+                                        <Tooltip content={sortable ? `Ordenar por ${label.toLowerCase()}` : ""}>
+                                            <div className={`flex items-center gap-1 ${alignmentClasses[alignment] ?? "text-left justify-start"}`}>
+                                                {label}
+                                                {sortable && isCurrentSort && (
+                                                    <ArrowDownIcon
+                                                        className={`size-5 bg-primary/50 text-base-content rounded-full p-px ml-1 transition-all ${sortConfig.direction === "asc" ? "rotate-180" : ""
+                                                            }`}
+                                                    />
+                                                )}
+                                            </div>
+                                        </Tooltip>
+                                    </TableHead>
+                                );
+                            })}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
