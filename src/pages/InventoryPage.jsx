@@ -20,6 +20,7 @@ import Tooltip from "../components/ui/Tooltip";
 import Button from "../components/ui/Button";
 import QueryStateManager from "../components/ui/QueryStateManager";
 import { SkeletonTable } from "../components/ui/Skeleton";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ==========================================
 // PRESENTATIONAL SUB-COMPONENTS
@@ -190,59 +191,69 @@ const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onO
                 </TableCell>
             </TableRow>
 
-            {esCategoria && expandido && (
-                <TableRow>
-                    <TableCell colSpan={7} className="p-0! border-b-0">
-                        {(item.extensiones || []).length === 0 ? (
-                            <p className="text-sm text-base-content/50">Sin extensiones registradas.</p>
-                        ) : (
-                            <Table wrapperClassName="w-full bg-base-300/50 rounded overflow-hidden">
-                                <TableHeader className="bg-base-300">
-                                    <TableRow>
-                                        <TableHead className="text-left w-xs">Código</TableHead>
-                                        <TableHead className="text-left w-12">Estado</TableHead>
-                                        <TableHead className="text-left">Comentario</TableHead>
-                                        <TableHead className="w-8"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {(item.extensiones || []).map((ext) => (
-                                        <TableRow key={ext.codigo} className="*:py-2!">
-                                            <TableCell className="font-mono text-sm">{ext.codigo}</TableCell>
-                                            <TableCell>
-                                                {ext.disponible ? (
-                                                    <span className="badge badge-success badge-sm shadow-sm/50">Disponible</span>
-                                                ) : (
-                                                    <span className="badge badge-error badge-sm shadow-sm/50">Prestado</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="italic">
-                                                {
-                                                    ext.comentario ? (
-                                                        <Tooltip content={ext.comentario}>
-                                                            <span className="truncate w-fit line-clamp-1 max-w-full">&ldquo;{ext.comentario}&rdquo;</span>
-                                                        </Tooltip>
-                                                    ) : (
-                                                        <EmptyRow />
-                                                    )
-                                                }
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button color="neutral" className="whitespace-nowrap" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onOpenCommentModal(item._id, ext.codigo, ext.comentario);
-                                                }}>
-                                                    {ext.comentario ? "Editar comentario" : "Agregar comentario"}
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </TableCell>
-                </TableRow>
-            )}
+            <AnimatePresence initial={false}>
+                {esCategoria && expandido && (
+                    <TableRow>
+                        <TableCell colSpan={7} className="p-0! border-b-0">
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                            >
+                                {(item.extensiones || []).length === 0 ? (
+                                    <p className="text-sm text-base-content/50 p-4">Sin extensiones registradas.</p>
+                                ) : (
+                                    <Table wrapperClassName="w-full bg-base-300/50 rounded overflow-hidden">
+                                        <TableHeader className="bg-base-300">
+                                            <TableRow>
+                                                <TableHead className="text-left w-xs">Código</TableHead>
+                                                <TableHead className="text-left w-12">Estado</TableHead>
+                                                <TableHead className="text-left">Comentario</TableHead>
+                                                <TableHead className="w-8"></TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {(item.extensiones || []).map((ext) => (
+                                                <TableRow key={ext.codigo} className="*:py-2!">
+                                                    <TableCell className="font-mono text-sm">{ext.codigo}</TableCell>
+                                                    <TableCell>
+                                                        {ext.disponible ? (
+                                                            <span className="badge badge-success badge-sm shadow-sm/50">Disponible</span>
+                                                        ) : (
+                                                            <span className="badge badge-error badge-sm shadow-sm/50">Prestado</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="italic">
+                                                        {
+                                                            ext.comentario ? (
+                                                                <Tooltip content={ext.comentario}>
+                                                                    <span className="truncate w-fit line-clamp-1 max-w-full">&ldquo;{ext.comentario}&rdquo;</span>
+                                                                </Tooltip>
+                                                            ) : (
+                                                                <EmptyRow />
+                                                            )
+                                                        }
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button color="neutral" className="whitespace-nowrap" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onOpenCommentModal(item._id, ext.codigo, ext.comentario);
+                                                        }}>
+                                                            {ext.comentario ? "Editar comentario" : "Agregar comentario"}
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                )}
+                            </motion.div>
+                        </TableCell>
+                    </TableRow>
+                )}
+            </AnimatePresence>
         </>
     );
 };
