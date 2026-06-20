@@ -442,7 +442,7 @@ export default function LoansPage() {
                                         <TableCell className="text-center overflow-hidden">
                                             {prestamo.comentario?.replace(/^sin observaciones$/gi, "")?.trim() && (
                                                 <Tooltip content={prestamo.comentario}>
-                                                    <span>
+                                                    <span className="cursor-help">
                                                         <CommentQuoteIcon className="size-5 scale-115" />
                                                     </span>
                                                 </Tooltip>
