@@ -15,3 +15,7 @@ export { default as SortIcon } from './sort';
 export { default as ClockExclamationIcon } from './clock-exclamation';
 export { default as FilterIcon } from './filter';
 export { default as CommentQuoteIcon } from './comment-quote';
+export { default as ChevronDownIcon } from './chevron-down';
+export { default as GiveFileIcon } from './give-file';
+export { default as EditSquareIcon } from './edit-square';
+export { default as GridSmallIcon } from './grid-small';
