@@ -8,6 +8,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from ".
  */
 const skeletonStyles = tv({
     base: [
+        "select-none pointer-events-none",
         "block w-full z-0 bg-base-200/50 relative overflow-hidden",
         "bg-linear-to-r from-transparent via-base-content/10 to-55% to-transparent",
         "bg-size-[200%_100%] bg-fixed"

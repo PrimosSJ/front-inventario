@@ -303,7 +303,9 @@ export default function LoansPage() {
                 isEmpty={prestamosFiltrados.length === 0}
                 isError={isError}
                 hasFilters={hasActiveFilters}
-                loadingSlot={<SkeletonTable />}
+                loadingSlot={<div className="flex flex-1 mask-b-from-0%">
+                    <SkeletonTable rows={18} />
+                </div>}
             >
                 {/* Main Data Table */}
                 <Table wrapperClassName="flex-1 grow min-h-0 scrollbar-gutter-stable" zebra>
