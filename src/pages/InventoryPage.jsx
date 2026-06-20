@@ -15,7 +15,7 @@ import SearchBar from "../components/ui/SearchBar";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
 import { EmptyRow } from "../components/ui/Table/utils";
 import AgregarPrestamo from "../components/prestamos/AgregarPrestamo";
-import { DownloadIcon, UploadIcon, AddIcon } from "../components/icons";
+import { DownloadIcon, UploadIcon, AddIcon, ChevronDownIcon, GiveFileIcon, EditSquareIcon, GridSmallIcon } from "../components/icons";
 import Tooltip from "../components/ui/Tooltip";
 import Button from "../components/ui/Button";
 import QueryStateManager from "../components/ui/QueryStateManager";
@@ -126,40 +126,66 @@ const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onO
             <TableRow
                 interactive={esCategoria}
                 onClick={esCategoria ? () => onToggleExpand(item._id) : undefined}
+                className={esCategoria ? "bg-linear-to-r! from-primary/10 to-50%" : ""}
             >
-                <TableCell className="text-center w-8 text-base-content/50">
-                    {esCategoria && <span className="text-lg select-none">{expandido ? "▼" : "▶"}</span>}
+                <TableCell className="text-center w-8">
+                    {esCategoria && (
+                        <ChevronDownIcon className={`transition-all size-5 ${expandido ? "" : "-rotate-90"}`} />
+                    )}
                 </TableCell>
-                <TableCell className="font-semibold">{item.nombre}</TableCell>
+                <TableCell className="font-semibold whitespace-nowrap truncate">
+                    {esCategoria && (
+                        <Tooltip content="Categoría (grupo)">
+                            <span>
+                                <GridSmallIcon className="inline size-4 mr-2" />
+                            </span>
+                        </Tooltip>
+                    )}
+                    <span>{item.nombre}</span>
+                </TableCell>
                 <TableCell className="text-base-content/70">{item.descripcion}</TableCell>
                 <TableCell>{item.categoria}</TableCell>
-                <TableCell>
-                    {esCategoria ? <span className="badge badge-info shadow-sm/50">Categoría</span> : <span className="badge shadow-sm/50">Unitario</span>}
+                <TableCell className="text-center whitespace-nowrap">
+                    {
+                        disponibles ? (
+                            <span className="font-mono">
+                                {esCategoria ? `${disponibles} / ${(item.extensiones || []).length}` : item.stock}
+                            </span>
+                        ) : <span className="badge badge-error shadow-sm/50">
+                            Sin stock
+                        </span>
+                    }
                 </TableCell>
-                <TableCell className="text-center font-mono">
-                    {esCategoria ? `${disponibles} / ${(item.extensiones || []).length}` : item.stock}
-                </TableCell>
-                <TableCell className="text-center">
-                    <div className="flex justify-center items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            type="button"
-                            onClick={() => onOpenEditModal(item._id)}
-                            className="btn btn-ghost btn-sm"
-                        >
-                            Editar
-                        </button>
-
-                        {disponibles > 0 ? (
-                            <button
-                                type="button"
-                                onClick={() => onOpenLoanModal(item._id)}
-                                className="btn btn-accent btn-sm"
+                <TableCell className="text-center min-w-64 relative">
+                    <div className="flex justify-center items-center inset-0 absolute h-full gap-1">
+                        <Tooltip content="Editar producto">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                layout="square"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenEditModal(item._id);
+                                }}
                             >
-                                {esCategoria ? "Prestar unidad" : "Prestar"}
-                            </button>
-                        ) : (
-                            <span className="badge badge-error text-white whitespace-nowrap shadow-sm/50">Sin Stock</span>
-                        )}
+                                <EditSquareIcon />
+                            </Button>
+                        </Tooltip>
+
+                        <Tooltip content={esCategoria ? "Prestar unidad" : "Prestar"}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                layout="square"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenLoanModal(item._id);
+                                }}
+                                disabled={!disponibles}
+                            >
+                                <GiveFileIcon />
+                            </Button>
+                        </Tooltip>
                     </div>
                 </TableCell>
             </TableRow>
@@ -336,10 +362,9 @@ export default function Inventario() {
                         <TableHeader className="bg-base-200 select-none">
                             <TableRow>
                                 <TableHead pin className="w-8"></TableHead>
-                                <TableHead pin>Nombre</TableHead>
-                                <TableHead pin>Descripción</TableHead>
+                                <TableHead pin className="min-w-20">Nombre</TableHead>
+                                <TableHead pin className="w-full">Descripción</TableHead>
                                 <TableHead pin>Categoría</TableHead>
-                                <TableHead pin>Tipo</TableHead>
                                 <TableHead pin className="text-center">Disponible</TableHead>
                                 <TableHead pin className="text-center">Acciones</TableHead>
                             </TableRow>
