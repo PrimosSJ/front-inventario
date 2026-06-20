@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSocket } from "../context/SocketContext";
 import {
     getInventoryRequest as defaultGetInventoryRequest,
@@ -11,15 +11,19 @@ import {
  */
 export function useInventoryData({ getInventory = defaultGetInventoryRequest } = {}) {
     const socket = useSocket();
+
     const [inventory, setInventory] = useState([]);
     const [expandidos, setExpandidos] = useState({});
     const [nombreFiltro, setNombreFiltro] = useState("");
     const [categoriaFiltro, setCategoriaFiltro] = useState("");
+    const [isLoading, setIsLoading] = useState("");
 
     useEffect(() => {
+        setIsLoading(true);
         getInventory()
             .then((res) => setInventory(res.data))
-            .catch((err) => console.error("Failed to load inventory:", err));
+            .catch((err) => console.error("Failed to load inventory:", err))
+            .finally(() => setIsLoading(false));
 
         if (!socket) return;
 
@@ -41,12 +45,15 @@ export function useInventoryData({ getInventory = defaultGetInventoryRequest } =
         return nombreMatch && categoriaMatch;
     });
 
+    const hasActiveFilters = useMemo(() => nombreFiltro || categoriaFiltro, [nombreFiltro, categoriaFiltro]);
+
     return {
         inventory, setInventory,
         expandidos, toggleExpand,
         nombreFiltro, setNombreFiltro,
         categoriaFiltro, setCategoriaFiltro,
-        filteredInventory
+        filteredInventory,
+        isLoading, hasActiveFilters
     };
 }
 

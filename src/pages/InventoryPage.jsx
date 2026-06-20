@@ -18,6 +18,8 @@ import AgregarPrestamo from "../components/prestamos/AgregarPrestamo";
 import { DownloadIcon, UploadIcon, AddIcon } from "../components/icons";
 import Tooltip from "../components/ui/Tooltip";
 import Button from "../components/ui/Button";
+import QueryStateManager from "../components/ui/QueryStateManager";
+import { SkeletonTable } from "../components/ui/Skeleton";
 
 // ==========================================
 // PRESENTATIONAL SUB-COMPONENTS
@@ -242,8 +244,10 @@ InventoryRow.propTypes = {
 
 export default function Inventario() {
     const {
+        isLoading,
         inventory, setInventory, expandidos, toggleExpand,
-        nombreFiltro, setNombreFiltro, categoriaFiltro, setCategoriaFiltro, filteredInventory
+        nombreFiltro, setNombreFiltro, categoriaFiltro, setCategoriaFiltro,
+        filteredInventory, hasActiveFilters
     } = useInventoryData();
 
     const {
@@ -320,35 +324,44 @@ export default function Inventario() {
                     </>
                 }
             >
-                <Table wrapperClassName="flex-1 grow min-h-0" zebra>
-                    <TableHeader className="bg-base-200 select-none">
-                        <TableRow>
-                            <TableHead pin className="w-8"></TableHead>
-                            <TableHead pin>Nombre</TableHead>
-                            <TableHead pin>Descripción</TableHead>
-                            <TableHead pin>Categoría</TableHead>
-                            <TableHead pin>Tipo</TableHead>
-                            <TableHead pin className="text-center">Disponible</TableHead>
-                            <TableHead pin className="text-center">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredInventory.map((item) => (
-                            <InventoryRow
-                                key={item._id}
-                                item={item}
-                                expandido={!!expandidos[item._id]}
-                                onToggleExpand={toggleExpand}
-                                onOpenCommentModal={(itemId, codigo, comentarioActual) => {
-                                    setModalExt({ itemId, codigo });
-                                    setModalComentario(comentarioActual || "");
-                                }}
-                                onOpenLoanModal={setLoanModalProductId}
-                                onOpenEditModal={setEditModalProductId}
-                            />
-                        ))}
-                    </TableBody>
-                </Table>
+                <QueryStateManager
+                    isLoading={isLoading}
+                    isEmpty={filteredInventory.length === 0}
+                    hasFilters={hasActiveFilters}
+                    loadingSlot={<div className="flex flex-1 mask-b-from-0%">
+                        <SkeletonTable rows={18} />
+                    </div>}
+                >
+                    <Table wrapperClassName="flex-1 grow min-h-0" zebra>
+                        <TableHeader className="bg-base-200 select-none">
+                            <TableRow>
+                                <TableHead pin className="w-8"></TableHead>
+                                <TableHead pin>Nombre</TableHead>
+                                <TableHead pin>Descripción</TableHead>
+                                <TableHead pin>Categoría</TableHead>
+                                <TableHead pin>Tipo</TableHead>
+                                <TableHead pin className="text-center">Disponible</TableHead>
+                                <TableHead pin className="text-center">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredInventory.map((item) => (
+                                <InventoryRow
+                                    key={item._id}
+                                    item={item}
+                                    expandido={!!expandidos[item._id]}
+                                    onToggleExpand={toggleExpand}
+                                    onOpenCommentModal={(itemId, codigo, comentarioActual) => {
+                                        setModalExt({ itemId, codigo });
+                                        setModalComentario(comentarioActual || "");
+                                    }}
+                                    onOpenLoanModal={setLoanModalProductId}
+                                    onOpenEditModal={setEditModalProductId}
+                                />
+                            ))}
+                        </TableBody>
+                    </Table>
+                </QueryStateManager>
             </DataPageLayout>
 
             {/* Modals outside the flow constraints */}
