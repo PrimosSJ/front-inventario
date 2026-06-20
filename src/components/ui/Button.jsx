@@ -7,26 +7,31 @@ import { tv } from "tailwind-variants";
  * Maps flexible API props to DaisyUI core classes for maximum reusability.
  */
 const buttonStyles = tv({
-    base: "relative inline-flex *:inline-flex gap-2 flex-row items-center justify-center font-medium transition-all duration-200 outline-none rounded border border-transparent select-none",
+    base: [
+        "relative inline-flex *:inline-flex gap-2 flex-row items-center justify-center font-medium transition-all duration-200 outline-none rounded border border-transparent select-none",
+        "[&_svg]:size-4"
+    ],
     variants: {
         color: {
             primary: "[--b:var(--color-primary)] [--t:var(--color-primary-content)] hover:brightness-110",
             neutral: "[--b:var(--color-neutral)] [--t:var(--color-neutral-content)] hover:brightness-110"
         },
         variant: {
-            outline: "border-(--b) text-(--b) hover:border-(--t)/50"
+            outline: "border-(--b) text-(--b) hover:border-(--t)/50",
+            ghost: "text-(--t) hover:bg-(--t)/20"
         },
         size: {
             xs: "h-6 min-h-6 px-2 text-xs",
             sm: "h-8 min-h-8 px-3 text-sm",
             md: "h-9 min-h-9 px-4 text-sm",
             lg: "h-12 min-h-12 px-6 text-lg",
+            icon: "h-8 min-h-8 text-xs [&_svg]:size-5"
         },
         layout: {
             block: "w-full flex",
             wide: "w-64",
             circle: "aspect-square rounded-full p-0 shrink-0",
-            square: "aspect-square rounded p-0 shrink-0",
+            square: "aspect-square rounded p-1 shrink-0",
         },
         isLoading: {
             true: "pointer-events-none opacity-80",
