@@ -4,6 +4,7 @@ import {
     getInventoryRequest as defaultGetInventoryRequest,
     updateExtensionCommentRequest as defaultUpdateCommentRequest
 } from "../api/inventory.api";
+import { normalizeText, lazyMatch } from "../utils/search.utils";
 
 /**
  * Hook to manage inventory state, filtering, and real-time updates.
@@ -14,7 +15,7 @@ export function useInventoryData({ getInventory = defaultGetInventoryRequest } =
 
     const [inventory, setInventory] = useState([]);
     const [expandidos, setExpandidos] = useState({});
-    const [nombreFiltro, setNombreFiltro] = useState("");
+    const [busqueda, setBusqueda] = useState("");
     const [categoriaFiltro, setCategoriaFiltro] = useState("");
     const [isLoading, setIsLoading] = useState("");
 
@@ -39,18 +40,24 @@ export function useInventoryData({ getInventory = defaultGetInventoryRequest } =
         setExpandidos((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const filteredInventory = (inventory || []).filter((item) => {
-        const nombreMatch = item.nombre.toLowerCase().includes(nombreFiltro.toLowerCase());
-        const categoriaMatch = categoriaFiltro === "" || item.categoria === categoriaFiltro;
-        return nombreMatch && categoriaMatch;
-    });
+    const filteredInventory = useMemo(() => {
+        const normalizedQuery = normalizeText(busqueda);
 
-    const hasActiveFilters = useMemo(() => nombreFiltro || categoriaFiltro, [nombreFiltro, categoriaFiltro]);
+        return (inventory || []).filter((item) => {
+            const matchesName = lazyMatch(item.nombre, normalizedQuery);
+            const matchesDescription = lazyMatch(item.descripcion, normalizedQuery);
+            const matchesCategory = categoriaFiltro === "" || item.categoria === categoriaFiltro;
+
+            return (matchesName || matchesDescription) && matchesCategory;
+        });
+    }, [inventory, busqueda, categoriaFiltro]);
+
+    const hasActiveFilters = useMemo(() => busqueda || categoriaFiltro, [busqueda, categoriaFiltro]);
 
     return {
         inventory, setInventory,
         expandidos, toggleExpand,
-        nombreFiltro, setNombreFiltro,
+        busqueda, setBusqueda,
         categoriaFiltro, setCategoriaFiltro,
         filteredInventory,
         isLoading, hasActiveFilters

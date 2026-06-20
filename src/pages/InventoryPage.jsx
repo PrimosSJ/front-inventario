@@ -272,7 +272,7 @@ export default function Inventario() {
     const {
         isLoading,
         inventory, setInventory, expandidos, toggleExpand,
-        nombreFiltro, setNombreFiltro, categoriaFiltro, setCategoriaFiltro,
+        busqueda, setBusqueda, categoriaFiltro, setCategoriaFiltro,
         filteredInventory, hasActiveFilters
     } = useInventoryData();
 
@@ -338,8 +338,8 @@ export default function Inventario() {
                     <>
                         <SearchBar
                             placeholder="Buscar por nombre..."
-                            value={nombreFiltro}
-                            onChange={(e) => setNombreFiltro(e.target.value)}
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
                             wrapperClassName="w-sm"
                         />
                         <SelectCategoria
