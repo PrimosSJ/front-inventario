@@ -17,6 +17,7 @@ import Tooltip from "../components/ui/Tooltip";
 import Button from "../components/ui/Button";
 import { Menu, MenuTrigger, MenuContent, MenuItem, MenuLabel, MenuSeparator } from "../components/ui/Menu";
 import QueryStateManager from "../components/ui/QueryStateManager";
+import { SkeletonTable } from "../components/ui/Skeleton";
 
 /**
  * Dropdown component for Sorting
@@ -349,6 +350,7 @@ export default function LoansPage() {
                 isEmpty={prestamosFiltrados.length === 0}
                 isError={isError}
                 hasFilters={hasActiveFilters}
+                loadingSlot={<SkeletonTable />}
             >
                 {/* Main Data Table */}
                 <Table wrapperClassName="flex-1 grow min-h-0" zebra>
