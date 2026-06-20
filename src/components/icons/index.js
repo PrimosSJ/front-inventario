@@ -14,3 +14,4 @@ export { default as ArrowDownIcon } from './arrow-down';
 export { default as SortIcon } from './sort';
 export { default as ClockExclamationIcon } from './clock-exclamation';
 export { default as FilterIcon } from './filter';
+export { default as CommentQuoteIcon } from './comment-quote';

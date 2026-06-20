@@ -5,7 +5,7 @@ import { formatRut } from "../utils/rut.utils";
 
 import { useLoansData, useBulkReturnLoansMutation } from "../hooks/useLoans";
 
-import { StarIcon, PublicIcon, SortIcon, ArrowDownIcon, FilterIcon } from "../components/icons";
+import { StarIcon, PublicIcon, CommentQuoteIcon, ArrowDownIcon, FilterIcon } from "../components/icons";
 import ReturnStatus from "../components/prestamos/ReturnStatus";
 import SearchBar from "../components/ui/SearchBar";
 import DataPageLayout from "../components/layout/DataPageLayout";
@@ -15,7 +15,7 @@ import { EmptyRow } from "../components/ui/Table/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import Tooltip from "../components/ui/Tooltip";
 import Button from "../components/ui/Button";
-import { Menu, MenuTrigger, MenuContent, MenuItem, MenuLabel, MenuSeparator } from "../components/ui/Menu";
+import { Menu, MenuTrigger, MenuContent, MenuLabel } from "../components/ui/Menu";
 import QueryStateManager from "../components/ui/QueryStateManager";
 import { SkeletonTable } from "../components/ui/Skeleton";
 
@@ -327,7 +327,7 @@ export default function LoansPage() {
                             {TABLE_COLUMNS.map(({ key, label, sortable, alignment, className = "" }) => {
                                 const isCurrentSort = sortConfig.key === key;
                                 const headerClasses = sortable
-                                    ? `cursor-pointer bg-white/5 hover:bg-white/10 transition-colors text-base-content ${className}`
+                                    ? `cursor-pointer transition-colors text-base-content ${className}`
                                     : className;
                                 const alignmentClasses = {
                                     "center": "text-center justify-center",
@@ -442,8 +442,8 @@ export default function LoansPage() {
                                         <TableCell className="text-center overflow-hidden">
                                             {prestamo.comentario?.replace(/^sin observaciones$/gi, "")?.trim() && (
                                                 <Tooltip content={prestamo.comentario}>
-                                                    <span className="px-2 cursor-help shadow-sm/50 font-black tracking-wide bg-linear-to-b from-white to-white/60 text-black text-shadow-md outline rounded outline-white justify-center text-center items-center h-full flex">
-                                                        ···
+                                                    <span>
+                                                        <CommentQuoteIcon className="size-5 scale-115" />
                                                     </span>
                                                 </Tooltip>
                                             )}
