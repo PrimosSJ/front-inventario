@@ -14,7 +14,8 @@ const buttonStyles = tv({
     variants: {
         color: {
             primary: "[--b:var(--color-primary)] [--t:var(--color-primary-content)] hover:brightness-110",
-            neutral: "[--b:var(--color-neutral)] [--t:var(--color-neutral-content)] hover:brightness-110"
+            neutral: "[--b:var(--color-neutral)] [--t:var(--color-neutral-content)] hover:brightness-110",
+            destructive: "[--b:var(--color-error)] [--t:var(--color-error-content)] hover:brightness-110",
         },
         variant: {
             outline: "border-(--b) text-(--b) hover:border-(--t)/50",
