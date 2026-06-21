@@ -21,3 +21,4 @@ export { default as EditSquareIcon } from './edit-square';
 export { default as GridSmallIcon } from './grid-small';
 export { default as BoxSeamIcon } from './box-seam';
 export { default as MoreVertIcon } from './more-vert';
+export { default as DeleteForeverIcon } from './delete-forever';
