@@ -19,3 +19,5 @@ export { default as ChevronDownIcon } from './chevron-down';
 export { default as GiveFileIcon } from './give-file';
 export { default as EditSquareIcon } from './edit-square';
 export { default as GridSmallIcon } from './grid-small';
+export { default as BoxSeamIcon } from './box-seam';
+export { default as MoreVertIcon } from './more-vert';
