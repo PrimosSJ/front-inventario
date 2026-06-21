@@ -15,12 +15,14 @@ import SearchBar from "../components/ui/SearchBar";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
 import { EmptyRow } from "../components/ui/Table/utils";
 import AgregarPrestamo from "../components/prestamos/AgregarPrestamo";
-import { DownloadIcon, UploadIcon, AddIcon, ChevronDownIcon, GiveFileIcon, EditSquareIcon, GridSmallIcon } from "../components/icons";
+import { DownloadIcon, UploadIcon, AddIcon, ChevronDownIcon, GiveFileIcon, EditSquareIcon, BoxSeamIcon, MoreVertIcon } from "../components/icons";
 import Tooltip from "../components/ui/Tooltip";
 import Button from "../components/ui/Button";
 import QueryStateManager from "../components/ui/QueryStateManager";
 import { SkeletonTable } from "../components/ui/Skeleton";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "tailwind-variants";
+import { Menu, MenuTrigger, MenuContent, MenuItem } from "../components/ui/Menu";
 
 // ==========================================
 // PRESENTATIONAL SUB-COMPONENTS
@@ -116,83 +118,219 @@ CommentModal.propTypes = {
     onConfirm: PropTypes.func.isRequired,
 };
 
+/**
+ * Handles the action buttons for an inventory row, encapsulating stopPropagation logic.
+ * @param {Object} props
+ * @param {boolean} props.isCategory - Determines tooltip and action availability.
+ * @param {boolean} props.hasStock - Whether the item can be loaned.
+ * @param {Function} props.onEdit - Handler for the edit action.
+ * @param {Function} props.onLoan - Handler for the loan action.
+ */
+const RowActions = ({ isCategory, hasStock, onEdit, onLoan }) => {
+    const handleEdit = (e) => {
+        e.stopPropagation();
+        onEdit();
+    };
+
+    const handleLoan = (e) => {
+        e.stopPropagation();
+        onLoan();
+    };
+
+    return (
+        <div
+            onClick={(e) => e.stopPropagation()}
+        >
+            <Menu placement="bottom-end">
+                <MenuTrigger asChild>
+                    <Button variant="ghost" size="icon" layout="square">
+                        <MoreVertIcon />
+                    </Button>
+                </MenuTrigger>
+
+                <MenuContent>
+                    <MenuItem leftIcon={<EditSquareIcon />} onClick={handleEdit}>
+                        Editar producto
+                    </MenuItem>
+
+                    <MenuItem
+                        leftIcon={<GiveFileIcon />}
+                        onClick={handleLoan}
+                        disabled={!hasStock}
+                    >
+                        {!hasStock ? "Sin stock para prestar" : isCategory ? "Prestar unidad" : "Prestar"}
+                    </MenuItem>
+                </MenuContent>
+            </Menu>
+        </div>
+    );
+};
+
+RowActions.propTypes = {
+    /** Flag to check if the current item is a category template */
+    isCategory: PropTypes.bool.isRequired,
+    /** Control rule specifying if the item possesses available inventory */
+    hasStock: PropTypes.bool.isRequired,
+    /** Interception routine triggered on edit requests */
+    onEdit: PropTypes.func.isRequired,
+    /** Interception routine triggered on loan requests */
+    onLoan: PropTypes.func.isRequired,
+};
+
+/**
+ * Renders the nested extensions table for category items.
+ * @param {Object} props
+ * @param {Array} props.extensions - List of extension items.
+ * @param {string} props.itemId - Parent item ID.
+ * @param {Function} props.onOpenCommentModal - Triggers the comment modal.
+ */
+const CategoryExtensionsTable = ({ extensions, itemId, onOpenCommentModal }) => {
+    if (!extensions || extensions.length === 0) {
+        return <p className="text-sm text-base-content/50 p-4">Sin extensiones registradas.</p>;
+    }
+
+    return (
+        <Table wrapperClassName="w-full bg-base-300/50 rounded overflow-hidden">
+            <TableHeader className="bg-base-300">
+                <TableRow>
+                    <TableHead className="text-left w-xs">Código</TableHead>
+                    <TableHead className="text-left w-12">Estado</TableHead>
+                    <TableHead className="text-left">Comentario</TableHead>
+                    <TableHead className="w-8"></TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {extensions.map((ext) => (
+                    <TableRow key={ext.codigo} className="*:py-2!">
+                        <TableCell className="font-mono text-sm">{ext.codigo}</TableCell>
+                        <TableCell className="*:min-w-20 font-semibold">
+                            {ext.disponible ? (
+                                <span className="badge badge-success badge-sm shadow-sm/50">Disponible</span>
+                            ) : (
+                                <span className="badge badge-error badge-sm shadow-sm/50">Prestado</span>
+                            )}
+                        </TableCell>
+                        <TableCell className="italic">
+                            {ext.comentario ? (
+                                <Tooltip content={ext.comentario}>
+                                    <span className="truncate w-fit line-clamp-1 max-w-full">&ldquo;{ext.comentario}&rdquo;</span>
+                                </Tooltip>
+                            ) : (
+                                <EmptyRow />
+                            )}
+                        </TableCell>
+                        <TableCell>
+                            <Button
+                                color="neutral"
+                                className="whitespace-nowrap"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenCommentModal(itemId, ext.codigo, ext.comentario);
+                                }}
+                            >
+                                {ext.comentario ? "Editar comentario" : "Agregar comentario"}
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
+
 const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onOpenLoanModal, onOpenEditModal }) => {
-    const esCategoria = item.tipo === "categoria";
-    const disponibles = esCategoria
-        ? (item.extensiones || []).filter((e) => e.disponible).length
+    const isCategory = item.tipo === "categoria";
+    const extensionsList = item.extensiones || [];
+    const totalExtensions = extensionsList.length;
+
+    const availableStock = isCategory
+        ? extensionsList.filter((e) => e.disponible).length
         : item.stock;
+
+    const hasStock = availableStock > 0;
+    const availabilityPercentage = totalExtensions > 0
+        ? (availableStock / totalExtensions) * 100
+        : 0;
+
+    const handleRowClick = isCategory ? () => onToggleExpand(item._id) : undefined;
 
     return (
         <>
             <TableRow
-                interactive={esCategoria}
-                onClick={esCategoria ? () => onToggleExpand(item._id) : undefined}
-                className={esCategoria ? "bg-linear-to-r! from-primary/10 to-50%" : ""}
+                interactive={isCategory}
+                onClick={handleRowClick}
+                className={isCategory ? "bg-linear-to-r! from-primary/10 to-50%" : ""}
             >
+                {/* Expand Icon */}
                 <TableCell className="text-center w-8">
-                    {esCategoria && (
+                    {isCategory && (
                         <ChevronDownIcon className={`transition-all size-5 ${expandido ? "" : "-rotate-90"}`} />
                     )}
                 </TableCell>
-                <TableCell className="font-semibold whitespace-nowrap truncate">
-                    {esCategoria && (
-                        <Tooltip content="Categoría (grupo)">
-                            <span>
-                                <GridSmallIcon className="inline size-4 mr-2" />
-                            </span>
-                        </Tooltip>
-                    )}
-                    <span>{item.nombre}</span>
+
+                {/* Name & Category Icon */}
+                <TableCell className="font-semibold">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        {isCategory && (
+                            <Tooltip content="Categoría (grupo)">
+                                <span className="shrink-0">
+                                    <BoxSeamIcon className="size-5" />
+                                </span>
+                            </Tooltip>
+                        )}
+                        <span className="truncate">{item.nombre}</span>
+                    </div>
                 </TableCell>
+
                 <TableCell className="text-base-content/70">{item.descripcion}</TableCell>
                 <TableCell>{item.categoria}</TableCell>
-                <TableCell className="text-center whitespace-nowrap">
-                    {
-                        disponibles ? (
-                            <span className="font-mono">
-                                {esCategoria ? `${disponibles} / ${(item.extensiones || []).length}` : item.stock}
-                            </span>
-                        ) : <span className="badge badge-error shadow-sm/50">
-                            Sin stock
-                        </span>
-                    }
-                </TableCell>
-                <TableCell className="text-center min-w-64 relative">
-                    <div className="flex justify-center items-center inset-0 absolute h-full gap-1">
-                        <Tooltip content="Editar producto">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                layout="square"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onOpenEditModal(item._id);
-                                }}
-                            >
-                                <EditSquareIcon />
-                            </Button>
-                        </Tooltip>
 
-                        <Tooltip content={esCategoria ? "Prestar unidad" : "Prestar"}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                layout="square"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onOpenLoanModal(item._id);
-                                }}
-                                disabled={!disponibles}
-                            >
-                                <GiveFileIcon />
-                            </Button>
-                        </Tooltip>
-                    </div>
+                {/* Stock Indicator */}
+                <TableCell className="text-center whitespace-nowrap select-none">
+                    <span className={cn(
+                        "font-mono justify-center flex min-w-20 bg-base-200 rounded relative overflow-hidden px-3 py-0.5 outline outline-base-content/10",
+                        !hasStock && "bg-error text-error-content"
+                    )}>
+                        {isCategory ? (
+                            <Tooltip content={
+                                <>
+                                    {availabilityPercentage.toFixed(1)}% disponible <br />
+                                    {(100 - availabilityPercentage).toFixed(1)}% ocupado
+                                </>
+                            }>
+                                <span className="tracking-widest tabular-nums cursor-help">
+                                    {availableStock}/{totalExtensions}
+                                </span>
+                            </Tooltip>
+                        ) : (
+                            item.stock
+                        )}
+
+                        {/* Progress Bar for Categories */}
+                        {hasStock && isCategory && (
+                            <div className="absolute h-0.5 w-full bottom-0 left-0 right-0 bg-base-300">
+                                <div
+                                    className="relative h-full left-0 bg-base-content/50 rounded-r-full"
+                                    style={{ width: `${availabilityPercentage}%` }}
+                                />
+                            </div>
+                        )}
+                    </span>
+                </TableCell>
+
+                {/* Actions Component */}
+                <TableCell className="text-center relative">
+                    <RowActions
+                        isCategory={isCategory}
+                        hasStock={hasStock}
+                        onEdit={() => onOpenEditModal(item._id)}
+                        onLoan={() => onOpenLoanModal(item._id)}
+                    />
                 </TableCell>
             </TableRow>
 
             <AnimatePresence initial={false}>
-                {esCategoria && expandido && (
+                {isCategory && expandido && (
                     <TableRow>
                         <TableCell colSpan={7} className="p-0! border-b-0">
                             <motion.div
@@ -202,53 +340,11 @@ const InventoryRow = ({ item, expandido, onToggleExpand, onOpenCommentModal, onO
                                 transition={{ duration: 0.25, ease: "easeInOut" }}
                                 className="overflow-hidden"
                             >
-                                {(item.extensiones || []).length === 0 ? (
-                                    <p className="text-sm text-base-content/50 p-4">Sin extensiones registradas.</p>
-                                ) : (
-                                    <Table wrapperClassName="w-full bg-base-300/50 rounded overflow-hidden">
-                                        <TableHeader className="bg-base-300">
-                                            <TableRow>
-                                                <TableHead className="text-left w-xs">Código</TableHead>
-                                                <TableHead className="text-left w-12">Estado</TableHead>
-                                                <TableHead className="text-left">Comentario</TableHead>
-                                                <TableHead className="w-8"></TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {(item.extensiones || []).map((ext) => (
-                                                <TableRow key={ext.codigo} className="*:py-2!">
-                                                    <TableCell className="font-mono text-sm">{ext.codigo}</TableCell>
-                                                    <TableCell>
-                                                        {ext.disponible ? (
-                                                            <span className="badge badge-success badge-sm shadow-sm/50">Disponible</span>
-                                                        ) : (
-                                                            <span className="badge badge-error badge-sm shadow-sm/50">Prestado</span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="italic">
-                                                        {
-                                                            ext.comentario ? (
-                                                                <Tooltip content={ext.comentario}>
-                                                                    <span className="truncate w-fit line-clamp-1 max-w-full">&ldquo;{ext.comentario}&rdquo;</span>
-                                                                </Tooltip>
-                                                            ) : (
-                                                                <EmptyRow />
-                                                            )
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button color="neutral" className="whitespace-nowrap" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            onOpenCommentModal(item._id, ext.codigo, ext.comentario);
-                                                        }}>
-                                                            {ext.comentario ? "Editar comentario" : "Agregar comentario"}
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                )}
+                                <CategoryExtensionsTable
+                                    extensions={extensionsList}
+                                    itemId={item._id}
+                                    onOpenCommentModal={onOpenCommentModal}
+                                />
                             </motion.div>
                         </TableCell>
                     </TableRow>
@@ -377,7 +473,7 @@ export default function Inventario() {
                                 <TableHead pin className="w-full">Descripción</TableHead>
                                 <TableHead pin>Categoría</TableHead>
                                 <TableHead pin className="text-center">Disponible</TableHead>
-                                <TableHead pin className="text-center">Acciones</TableHead>
+                                <TableHead pin />
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -424,7 +520,7 @@ export default function Inventario() {
 
             {editModalProductId && (
                 <div className="modal modal-open">
-                    <div className="modal-box">
+                    <div className="modal-box w-11/12 max-w-4xl">
                         <EditarItem
                             itemId={editModalProductId}
                             onClose={() => setEditModalProductId(null)}
