@@ -25,15 +25,23 @@ export default function PrestamosPorRut() {
 
     const [lista, setLista] = useState([]);
     const [rut, setRut] = useState("");
-    const [isLoading, setIsLoading] = useState(true);
+    // Arranca en false: sin un RUT buscado no hay carga en curso, así se muestra
+    // el estado vacío ("Ingresa un RUT...") en vez de quedar pegado en el skeleton.
+    const [isLoading, setIsLoading] = useState(false);
+    const [isError, setIsError] = useState(false);
 
     /** Decoupled handler */
     const handleGetData = useCallback(() => {
         if (!rut) return;
         setIsLoading(true);
+        setIsError(false);
         getLoansByRutRequest(rut)
             .then((res) => setLista(res.data))
-            .catch((err) => console.log(err))
+            .catch((err) => {
+                console.error(err);
+                setIsError(true);
+                setLista([]);
+            })
             .finally(() => {
                 setIsLoading(false);
             });
@@ -79,7 +87,9 @@ export default function PrestamosPorRut() {
         >
             <QueryStateManager
                 isLoading={isLoading}
+                isError={isError}
                 isEmpty={lista.length === 0}
+                onRetry={handleGetData}
                 emptySlot={<DefaultEmpty title="No hay resultados" description="No hubieron resultados. Ingresa un RUT para buscar en el historial." />}
                 loadingSlot={<div className="flex flex-1 mask-b-from-0%">
                     <SkeletonTable rows={18} />

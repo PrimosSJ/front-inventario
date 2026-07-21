@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { getSpecialPendingLoansRequest } from "../../api/loans.api";
-import { enviarRecordatorioDevolucion } from "../../services/email.service";
+import { enviarRecordatorioDevolucion, EMAIL_ENABLED } from "../../services/email.service";
 
 const INTERVALO_MS = 30 * 60 * 1000;
 
@@ -55,6 +55,8 @@ async function verificarYEnviar() {
 
 export default function AlertasDevoluciones() {
     useEffect(() => {
+        // Si el envío de correos está desactivado, no se hace polling ni recordatorios.
+        if (!EMAIL_ENABLED) return;
         verificarYEnviar();
         const intervalo = setInterval(verificarYEnviar, INTERVALO_MS);
         return () => clearInterval(intervalo);
