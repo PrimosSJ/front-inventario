@@ -18,7 +18,7 @@ const PageTransitionProvider = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="flex-1 w-full flex flex-col"
+                className="flex-1 min-h-0 w-full flex flex-col"
             >
                 {currentOutlet}
             </motion.main>

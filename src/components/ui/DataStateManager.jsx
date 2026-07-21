@@ -7,11 +7,15 @@ const dataStateStyles = tv({
         container: "flex flex-col gap-2 items-center justify-center min-h-75 h-full flex-1 w-full p-6 text-center animate-fade-in",
         title: "text-lg font-semibold text-base-content not-first:mt-4",
         description: "text-sm text-base-content/60 max-w-md not-last:mb-6",
-        iconWrapper: "text-base-content/40 p-4 bg-base-200/50 rounded-full"
+        iconWrapper: "text-base-content/40 p-4 bg-base-200/50 rounded-full",
+        // Success-state wrapper must stay a flex container so scrollable children
+        // (e.g. Table's `flex-1 min-h-0` wrapper) can actually be height-constrained
+        // instead of growing to fit all content and blowing out the parent's overflow-hidden box.
+        content: "flex flex-col flex-1 min-h-0 w-full h-full"
     }
 });
 
-const { container, title, description, iconWrapper } = dataStateStyles();
+const { container, title, description, iconWrapper, content } = dataStateStyles();
 
 /**
  * Default Loading State Representation.
@@ -82,6 +86,7 @@ const DataStateManager = forwardRef(({
     emptySlot,
     emptyFiltersSlot,
     children,
+    className,
     ...props
 }, ref) => {
 
@@ -102,7 +107,7 @@ const DataStateManager = forwardRef(({
         case "success":
         case "idle":
         default:
-            return <div ref={ref} {...props}>{children}</div>;
+            return <div ref={ref} className={content({ class: className })} {...props}>{children}</div>;
     }
 });
 
@@ -128,7 +133,9 @@ DataStateManager.propTypes = {
     /** Custom React node slot to override the empty search results template view */
     emptyFiltersSlot: PropTypes.node,
     /** Content rendered inside successful state scenarios */
-    children: PropTypes.node
+    children: PropTypes.node,
+    /** Extra classes merged into the success-state wrapper */
+    className: PropTypes.string
 };
 
 export default DataStateManager;

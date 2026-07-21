@@ -43,13 +43,16 @@ export function useInventoryData({ getInventory = defaultGetInventoryRequest } =
     const filteredInventory = useMemo(() => {
         const normalizedQuery = normalizeText(busqueda);
 
-        return (inventory || []).filter((item) => {
-            const matchesName = lazyMatch(item.nombre, normalizedQuery);
-            const matchesDescription = lazyMatch(item.descripcion, normalizedQuery);
-            const matchesCategory = categoriaFiltro === "" || item.categoria === categoriaFiltro;
+        return (inventory || [])
+            .filter((item) => {
+                const matchesName = lazyMatch(item.nombre, normalizedQuery);
+                const matchesDescription = lazyMatch(item.descripcion, normalizedQuery);
+                const matchesCategory = categoriaFiltro === "" || item.categoria === categoriaFiltro;
 
-            return (matchesName || matchesDescription) && matchesCategory;
-        });
+                return (matchesName || matchesDescription) && matchesCategory;
+            })
+            // Items de tipo "categoria" primero, luego los "unitario"
+            .sort((a, b) => (a.tipo === "categoria" ? 0 : 1) - (b.tipo === "categoria" ? 0 : 1));
     }, [inventory, busqueda, categoriaFiltro]);
 
     const hasActiveFilters = useMemo(() => busqueda || categoriaFiltro, [busqueda, categoriaFiltro]);
