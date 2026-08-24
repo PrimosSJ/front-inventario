@@ -7,6 +7,9 @@ import { createLoanRequest } from "../../api/loans.api";
 import RutReader from "../shared/RutReader";
 import { enviarConfirmacionPrestamo } from "../../services/email.service";
 
+// El QR de cada producto codifica su _id de Mongo (24 caracteres hex).
+const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+
 export default function AgregarPrestamo({ onClose, initialProductId = null }) {
     const [isLoadingProduct, setIsLoadingProduct] = useState(!!initialProductId);
 
@@ -33,30 +36,58 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
         fecha_devolucion_esperada: "",
     });
 
+    const aplicarProducto = (data, notFoundMessage = "Producto no encontrado") => {
+        if (!data || !data._id) {
+            setError(notFoundMessage);
+            setProducto(null);
+            return;
+        }
+        setProducto(data);
+        setError(null);
+        setSearchQuery(data.nombre);
+
+        if (data.tipo === "categoria") {
+            getAvailableExtensionsRequest(data._id)
+                .then((r) => setExtensionesDisponibles(r.data || []))
+                .catch(() => setExtensionesDisponibles([]));
+        } else {
+            setExtensionesDisponibles([]);
+        }
+    };
+
     const cargarProducto = (productoId) => {
         if (!productoId) return;
         setIsLoadingProduct(true);
 
         getInventoryItemRequest(productoId)
-            .then((res) => {
-                if (!res.data || !res.data._id) {
-                    setError("Producto no encontrado");
-                    setProducto(null);
-                    return;
-                }
-                setProducto(res.data);
-                setError(null);
-
-                if (res.data.tipo === "categoria") {
-                    getAvailableExtensionsRequest(productoId)
-                        .then((r) => setExtensionesDisponibles(r.data || []))
-                        .catch(() => setExtensionesDisponibles([]));
-                } else {
-                    setExtensionesDisponibles([]);
-                }
-            })
+            .then((res) => aplicarProducto(res.data))
             .catch(() => {
                 setError("No se pudo cargar el producto");
+                setProducto(null);
+            })
+            .finally(() => {
+                setIsLoadingProduct(false);
+            });
+    };
+
+    // Escaneo de QR: el lector ingresa el _id de Mongo del producto en el mismo
+    // campo de búsqueda por nombre. Si el valor matchea un ObjectId, resolvemos
+    // por id en vez de filtrar por texto: primero contra la lista ya cargada
+    // (instantáneo), y si no está, contra el backend.
+    const handleProductIdScan = (productId) => {
+        setDropdownOpen(false);
+
+        const cached = allProducts.find((p) => p._id === productId);
+        if (cached) {
+            aplicarProducto(cached);
+            return;
+        }
+
+        setIsLoadingProduct(true);
+        getInventoryItemRequest(productId)
+            .then((res) => aplicarProducto(res.data, "No se encontró un producto con ese código"))
+            .catch(() => {
+                setError("No se encontró un producto con ese código");
                 setProducto(null);
             })
             .finally(() => {
@@ -206,9 +237,20 @@ export default function AgregarPrestamo({ onClose, initialProductId = null }) {
                                 placeholder="Escribe el nombre del producto..."
                                 value={searchQuery}
                                 onChange={(e) => {
-                                    setSearchQuery(e.target.value);
-                                    setDropdownOpen(e.target.value.length >= 2);
-                                    if (e.target.value.length < 2) setProducto(null);
+                                    const value = e.target.value;
+                                    setSearchQuery(value);
+
+                                    // Los lectores de QR suelen ingresar el texto de golpe (o
+                                    // dejar un salto de línea al final); un ObjectId completo,
+                                    // venga como venga, se resuelve por id en vez de por nombre.
+                                    const trimmed = value.trim();
+                                    if (OBJECT_ID_REGEX.test(trimmed)) {
+                                        handleProductIdScan(trimmed);
+                                        return;
+                                    }
+
+                                    setDropdownOpen(value.length >= 2);
+                                    if (value.length < 2) setProducto(null);
                                 }}
                                 onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                                 onFocus={() => searchQuery.length >= 2 && setDropdownOpen(true)}
